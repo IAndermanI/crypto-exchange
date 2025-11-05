@@ -1,4 +1,3 @@
-import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -6,37 +5,18 @@ from database import db, init_db
 from models import User, Cryptocurrency, Holdings, Transaction
 import requests
 from datetime import datetime, timedelta
-import time
-import sys
+import os
 
-# Загрузка переменных окружения
 app = Flask(__name__)
-
-# Конфигурация из переменных окружения
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://user:password@localhost:5432/crypto_exchange')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@db:5432/crypto_exchange')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'dev-secret-key')
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'super-secret-key-change-in-production')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
-# Константы из переменных окружения
-COMMISSION_RATE = float(os.environ.get('COMMISSION_RATE', '0.015'))
-INITIAL_BALANCE = float(os.environ.get('INITIAL_BALANCE', '10000.0'))
-FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
-
-# Настройка CORS
-CORS(app, origins=['http://localhost:3000', 'http://localhost:80', os.environ.get('FRONTEND_URL', '*')])
+# ИСПРАВЛЕННЫЙ CORS - разрешаем всё для простоты
+CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization"]}})
 
 jwt = JWTManager(app)
-
-print(f"""
-🚀 Starting Crypto Exchange Backend
-📊 Configuration:
-   - Environment: {FLASK_ENV}
-   - Database: {app.config['SQLALCHEMY_DATABASE_URI'].split('@')[1] if '@' in app.config['SQLALCHEMY_DATABASE_URI'] else 'local'}
-   - Commission Rate: {COMMISSION_RATE * 100}%
-   - Initial Balance: ${INITIAL_BALANCE}
-""")
-
 init_db(app)
 
 # Функция для обновления цен криптовалют

@@ -22,46 +22,42 @@ init_db(app)
 # Функция для обновления цен криптовалют
 def update_crypto_prices():
     try:
-        # Список популярных криптовалют
-        crypto_ids = 'bitcoin,ethereum,binancecoin,cardano,solana,ripple,polkadot,dogecoin,avalanche-2,chainlink'
+        # Топ-20 криптовалют по капитализации
+        crypto_ids = 'bitcoin,ethereum,tether,binancecoin,solana,xrp,usd-coin,cardano,avalanche-2,dogecoin,tron,chainlink,polygon,wrapped-bitcoin,polkadot,shiba-inu,dai,litecoin,cosmos,uniswap'
         url = f'https://api.coingecko.com/api/v3/simple/price?ids={crypto_ids}&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true'
         
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
             
-            # Маппинг ID CoinGecko к символам
-            symbol_map = {
-                'bitcoin': 'BTC',
-                'ethereum': 'ETH',
-                'binancecoin': 'BNB',
-                'cardano': 'ADA',
-                'solana': 'SOL',
-                'ripple': 'XRP',
-                'polkadot': 'DOT',
-                'dogecoin': 'DOGE',
-                'avalanche-2': 'AVAX',
-                'chainlink': 'LINK'
-            }
-            
-            name_map = {
-                'bitcoin': 'Bitcoin',
-                'ethereum': 'Ethereum',
-                'binancecoin': 'Binance Coin',
-                'cardano': 'Cardano',
-                'solana': 'Solana',
-                'ripple': 'Ripple',
-                'polkadot': 'Polkadot',
-                'dogecoin': 'Dogecoin',
-                'avalanche-2': 'Avalanche',
-                'chainlink': 'Chainlink'
+            # Расширенный маппинг
+            coin_map = {
+                'bitcoin': ('BTC', 'Bitcoin'),
+                'ethereum': ('ETH', 'Ethereum'),
+                'tether': ('USDT', 'Tether'),
+                'binancecoin': ('BNB', 'Binance Coin'),
+                'solana': ('SOL', 'Solana'),
+                'xrp': ('XRP', 'Ripple'),
+                'usd-coin': ('USDC', 'USD Coin'),
+                'cardano': ('ADA', 'Cardano'),
+                'avalanche-2': ('AVAX', 'Avalanche'),
+                'dogecoin': ('DOGE', 'Dogecoin'),
+                'tron': ('TRX', 'TRON'),
+                'chainlink': ('LINK', 'Chainlink'),
+                'polygon': ('MATIC', 'Polygon'),
+                'wrapped-bitcoin': ('WBTC', 'Wrapped Bitcoin'),
+                'polkadot': ('DOT', 'Polkadot'),
+                'shiba-inu': ('SHIB', 'Shiba Inu'),
+                'dai': ('DAI', 'Dai'),
+                'litecoin': ('LTC', 'Litecoin'),
+                'cosmos': ('ATOM', 'Cosmos'),
+                'uniswap': ('UNI', 'Uniswap')
             }
             
             for coin_id, coin_data in data.items():
-                symbol = symbol_map.get(coin_id)
-                name = name_map.get(coin_id)
-                
-                if symbol and name:
+                if coin_id in coin_map:
+                    symbol, name = coin_map[coin_id]
+                    
                     crypto = Cryptocurrency.query.filter_by(symbol=symbol).first()
                     if not crypto:
                         crypto = Cryptocurrency(symbol=symbol, name=name)
@@ -78,6 +74,7 @@ def update_crypto_prices():
     except Exception as e:
         print(f"Error updating prices: {e}")
         return False
+
 
 # Регистрация
 @app.route('/api/register', methods=['POST'])
@@ -131,9 +128,11 @@ def login():
 # Получить список криптовалют
 @app.route('/api/cryptocurrencies', methods=['GET'])
 def get_cryptocurrencies():
-    update_crypto_prices()  # Обновляем цены при каждом запросе
-    cryptos = Cryptocurrency.query.all()
+    update_crypto_prices()  # Обновляем цены
+    # Сортируем по капитализации (от большей к меньшей)
+    cryptos = Cryptocurrency.query.order_by(Cryptocurrency.market_cap.desc()).all()
     return jsonify([crypto.to_dict() for crypto in cryptos]), 200
+
 
 # Получить информацию о конкретной криптовалюте
 @app.route('/api/cryptocurrency/<symbol>', methods=['GET'])

@@ -193,6 +193,105 @@ body {
   color: #f44336;
 }
 
+/* Dashboard List View */
+.crypto-list {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.crypto-header {
+  display: grid;
+  grid-template-columns: 50px 200px 120px 100px 150px 150px;
+  padding: 1rem;
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #666;
+  font-size: 0.9rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.crypto-row {
+  display: grid;
+  grid-template-columns: 50px 200px 120px 100px 150px 150px;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.3s;
+  align-items: center;
+}
+
+.crypto-row:hover {
+  background: #f8f9fa;
+}
+
+.crypto-row .rank {
+  color: #999;
+  font-weight: 500;
+}
+
+.crypto-row .name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.crypto-row .name strong {
+  color: #333;
+  font-size: 1rem;
+}
+
+.crypto-row .name small {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.crypto-row .price {
+  font-weight: 600;
+  color: #333;
+}
+
+.crypto-row .change.positive {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.crypto-row .change.negative {
+  color: #f44336;
+  font-weight: 500;
+}
+
+.crypto-row .market-cap,
+.crypto-row .volume {
+  color: #555;
+}
+
+/* Адаптивность для списка */
+@media (max-width: 1024px) {
+  .crypto-header,
+  .crypto-row {
+    grid-template-columns: 40px 150px 100px 80px 120px;
+  }
+  
+  .crypto-header .volume,
+  .crypto-row .volume {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .crypto-header,
+  .crypto-row {
+    grid-template-columns: 40px 1fr 100px 80px;
+  }
+  
+  .crypto-header .market-cap,
+  .crypto-row .market-cap {
+    display: none;
+  }
+}
+
 /* Детальная страница криптовалюты */
 .crypto-detail {
   padding: 2rem;

@@ -9,7 +9,7 @@ function Dashboard() {
 
   useEffect(() => {
     fetchCryptocurrencies();
-    const interval = setInterval(fetchCryptocurrencies, 30000); // Обновляем каждые 30 секунд
+    const interval = setInterval(fetchCryptocurrencies, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -28,24 +28,43 @@ function Dashboard() {
     navigate(`/crypto/${symbol}`);
   };
 
+  const formatNumber = (num) => {
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+    return num?.toLocaleString();
+  };
+
   if (loading) return <div className="loading">Загрузка...</div>;
 
   return (
     <div className="dashboard">
       <h2>Рынок криптовалют</h2>
-      <div className="crypto-grid">
-        {cryptocurrencies.map((crypto) => (
+      <div className="crypto-list">
+        <div className="crypto-header">
+          <span className="rank">#</span>
+          <span className="name">Название</span>
+          <span className="price">Цена</span>
+          <span className="change">24ч</span>
+          <span className="market-cap">Капитализация</span>
+          <span className="volume">Объем (24ч)</span>
+        </div>
+        {cryptocurrencies.map((crypto, index) => (
           <div
             key={crypto.id}
-            className="crypto-card"
+            className="crypto-row"
             onClick={() => handleCryptoClick(crypto.symbol)}
           >
-            <h3>{crypto.name}</h3>
-            <p className="crypto-symbol">{crypto.symbol}</p>
-            <p className="crypto-price">${crypto.current_price?.toFixed(2)}</p>
-            <p className={`price-change ${crypto.price_change_24h >= 0 ? 'positive' : 'negative'}`}>
+            <span className="rank">{index + 1}</span>
+            <span className="name">
+              <strong>{crypto.symbol}</strong>
+              <small>{crypto.name}</small>
+            </span>
+            <span className="price">${crypto.current_price?.toFixed(2)}</span>
+            <span className={`change ${crypto.price_change_24h >= 0 ? 'positive' : 'negative'}`}>
               {crypto.price_change_24h >= 0 ? '+' : ''}{crypto.price_change_24h?.toFixed(2)}%
-            </p>
+            </span>
+            <span className="market-cap">${formatNumber(crypto.market_cap)}</span>
+            <span className="volume">${formatNumber(crypto.volume_24h)}</span>
           </div>
         ))}
       </div>

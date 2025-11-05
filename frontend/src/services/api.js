@@ -1,6 +1,12 @@
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const COMMISSION_RATE = process.env.REACT_APP_COMMISSION_RATE || '1.5';
+
+console.log('API Configuration:', {
+  apiUrl: API_URL,
+  commissionRate: COMMISSION_RATE + '%'
+});
 
 const api = axios.create({
   baseURL: API_URL,
@@ -23,4 +29,6 @@ api.interceptors.request.use(
   }
 );
 
+// Экспортируем и константу комиссии
+export const COMMISSION = parseFloat(COMMISSION_RATE) / 100;
 export default api;

@@ -1,6 +1,7 @@
 from database import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import os
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -9,7 +10,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    balance_usd = db.Column(db.Float, default=10000.0)  # Начальный баланс $10,000
+    balance_usd = db.Column(db.Float, default=float(os.environ.get('INITIAL_BALANCE', '10000.0')))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     holdings = db.relationship('Holdings', backref='user', lazy=True)

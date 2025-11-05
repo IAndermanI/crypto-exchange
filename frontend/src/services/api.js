@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://84.201.180.47:5000/api';
 const COMMISSION_RATE = process.env.REACT_APP_COMMISSION_RATE || '1.5';
 
 console.log('API Configuration:', {

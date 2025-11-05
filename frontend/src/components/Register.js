@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function Register({ onLogin }) {
@@ -7,13 +7,25 @@ function Register({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
     try {
       const response = await api.post('/register', { username, email, password });
-      onLogin(response.data.access_token, response.data.user);
+      
+      // Сохраняем токен и данные пользователя
+      const { access_token, user } = response.data;
+      
+      // Вызываем onLogin с токеном и данными пользователя
+      onLogin(access_token, user);
+      
+      // Переходим на dashboard
+      navigate('/dashboard');
     } catch (err) {
+      console.error('Register error:', err);
       setError(err.response?.data?.error || 'Ошибка регистрации');
     }
   };

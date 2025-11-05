@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
     try {
       const response = await api.post('/login', { username, password });
-      onLogin(response.data.access_token, response.data.user);
+      
+      // Сохраняем токен и данные пользователя
+      const { access_token, user } = response.data;
+      
+      // Вызываем onLogin с токеном и данными пользователя
+      onLogin(access_token, user);
+      
+      // Переходим на dashboard
+      navigate('/dashboard');
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.error || 'Ошибка входа');
     }
   };

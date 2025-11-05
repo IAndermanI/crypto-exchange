@@ -13,19 +13,24 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const userData = localStorage.getItem('user');
+    if (token && userData) {
       setIsAuthenticated(true);
+      setUser(JSON.parse(userData));
     }
   }, []);
 
   const handleLogin = (token, userData) => {
+    // ВАЖНО: сохраняем токен и данные пользователя
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthenticated(true);
     setUser(userData);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
   };

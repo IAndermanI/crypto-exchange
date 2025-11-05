@@ -19,7 +19,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://user:password@db:5432/crypto_exchange
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/crypto_exchange
       JWT_SECRET_KEY: your-secret-key-change-in-production
       FLASK_ENV: development
     ports:

@@ -15,17 +15,12 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    console.log('Token from localStorage:', token ? 'exists' : 'missing');
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    console.log('Request config:', {
-      url: config.url,
-      method: config.method,
-      hasAuth: !!config.headers.Authorization
-    });
+    console.log('Request:', config.method.toUpperCase(), config.url, token ? '✓ Auth' : '✗ No Auth');
     
     return config;
   },
@@ -34,34 +29,34 @@ api.interceptors.request.use(
   }
 );
 
-// Обработка ответов
+// Обработка ответов - УПРОЩЕННАЯ ВЕРСИЯ
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('Response OK:', response.config.url);
+    return response;
+  },
   (error) => {
-    console.error('API Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      url: error.config?.url
-    });
+    console.error('API Error:', error.response?.status, error.config?.url);
     
-    // Если 401 или 422 - токен невалидный
-    if (error.response?.status === 401 || error.response?.status === 422) {
-      // Только если мы не на странице логина
-      const isAuthEndpoint = error.config?.url?.includes('/login') || 
-                             error.config?.url?.includes('/register') ||
-                             error.config?.url?.includes('/cryptocurrencies');
+    // Проверяем, нужно ли делать редирект
+    const isProtectedEndpoint = error.config?.url?.includes('/cryptocurrency/') ||
+                                error.config?.url?.includes('/portfolio') ||
+                                error.config?.url?.includes('/transactions') ||
+                                error.config?.url?.includes('/buy') ||
+                                error.config?.url?.includes('/sell');
+    
+    // Если 401 или 422 на защищенном endpoint и мы не на странице логина
+    if ((error.response?.status === 401 || error.response?.status === 422) && 
+        isProtectedEndpoint && 
+        !window.location.pathname.includes('/login')) {
       
-      if (!isAuthEndpoint && window.location.pathname !== '/login') {
-        console.log('Redirecting to login...');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-      }
+      // НЕ делаем автоматический редирект, просто выбрасываем ошибку
+      // Пусть компонент сам решает что делать
+      console.log('Authentication required for:', error.config?.url);
     }
     
     return Promise.reject(error);
   }
 );
-
 export const COMMISSION = 0.015; // 1.5%
 export default api;

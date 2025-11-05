@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -12,20 +12,31 @@ function CryptoDetail() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchCryptoData();
-  }, [symbol]);
-
-  const fetchCryptoData = async () => {
+  const fetchCryptoData = useCallback(async () => {
     try {
+      setLoading(true);
       const response = await api.get(`/cryptocurrency/${symbol}`);
       setCrypto(response.data);
-      setLoading(false);
+      setError('');
     } catch (err) {
       console.error('Ошибка загрузки данных:', err);
+      if (err.response?.status !== 401 && err.response?.status !== 422) {
+        setError('Ошибка загрузки данных криптовалюты');
+      }
+    } finally {
       setLoading(false);
     }
-  };
+  }, [symbol]);
+
+  useEffect(() => {
+    // Проверяем наличие токена перед запросом
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchCryptoData();
+    } else {
+      navigate('/login');
+    }
+  }, [fetchCryptoData, navigate]);
 
   const handleTransaction = async () => {
     setError('');
@@ -45,9 +56,9 @@ function CryptoDetail() {
       
       setMessage(response.data.message);
       setAmount('');
-      fetchCryptoData(); // Обновляем данные
+      await fetchCryptoData(); // Обновляем данные
       
-      // Обновляем баланс в localStorage (простое решение)
+      // Обновляем баланс в localStorage
       if (response.data.transaction) {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         userData.balance_usd = response.data.transaction.new_balance;

@@ -9,17 +9,30 @@ function Portfolio() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Проверяем токен перед загрузкой
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
     fetchPortfolio();
     fetchTransactions();
-  }, []);
+  }, [navigate]);
 
   const fetchPortfolio = async () => {
     try {
       const response = await api.get('/portfolio');
       setPortfolio(response.data);
-      setLoading(false);
     } catch (err) {
       console.error('Ошибка загрузки портфеля:', err);
+      if (err.response?.status === 401 || err.response?.status === 422) {
+        // Токен невалидный - очищаем и редиректим
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+      }
+    } finally {
       setLoading(false);
     }
   };

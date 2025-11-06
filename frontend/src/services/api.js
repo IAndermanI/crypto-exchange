@@ -12,10 +12,7 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Убедимся, что токен не "undefined" или "null"
-      if (token !== 'undefined' && token !== 'null') {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },

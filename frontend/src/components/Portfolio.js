@@ -26,12 +26,6 @@ function Portfolio() {
       setPortfolio(response.data);
     } catch (err) {
       console.error('Ошибка загрузки портфеля:', err);
-      if (err.response?.status === 401 || err.response?.status === 422) {
-        // Токен невалидный - очищаем и редиректим
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
-      }
     } finally {
       setLoading(false);
     }

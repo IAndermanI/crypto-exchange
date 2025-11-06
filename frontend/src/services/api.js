@@ -11,13 +11,12 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Убедимся, что токен не "undefined" или "null"
+      if (token !== 'undefined' && token !== 'null') {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
-    
-    console.log('Request:', config.method.toUpperCase(), config.url, token ? '✓ Auth' : '✗ No Auth');
-    
     return config;
   },
   (error) => {

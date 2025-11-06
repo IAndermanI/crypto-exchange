@@ -80,6 +80,8 @@ def login():
 def buy_crypto():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 401
     
     data = request.json
     coingecko_id = data.get('coingecko_id')
@@ -157,6 +159,8 @@ def buy_crypto():
 def sell_crypto():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 401
     
     data = request.json
     coingecko_id = data.get('coingecko_id')
@@ -229,9 +233,12 @@ def sell_crypto():
 def get_portfolio():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 401
+        
     holdings = Holdings.query.filter_by(user_id=user_id).all()
     
-    portfolio_value = sum(h.amount * h.cryptocurrency.current_price for h in holdings)
+    portfolio_value = sum(h.amount * (h.cryptocurrency.current_price or 0) for h in holdings)
     
     return jsonify({
         'balance_usd': user.balance_usd,
@@ -245,6 +252,10 @@ def get_portfolio():
 @jwt_required()
 def get_transactions():
     user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 401
+        
     transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.created_at.desc()).limit(50).all()
     
     return jsonify([{

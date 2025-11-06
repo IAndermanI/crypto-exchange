@@ -71,7 +71,7 @@ class Holdings(db.Model):
             'id': self.id,
             'crypto': self.cryptocurrency.to_dict(),
             'amount': self.amount,
-            'total_value': self.amount * self.cryptocurrency.current_price
+            'total_value': self.amount * (self.cryptocurrency.current_price or 0)
         }
 
 class Transaction(db.Model):

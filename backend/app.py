@@ -23,7 +23,6 @@ jwt = JWTManager(app)
 init_db(app)
 
 
-
 # Регистрация
 @app.route('/api/register', methods=['POST'])
 def register():

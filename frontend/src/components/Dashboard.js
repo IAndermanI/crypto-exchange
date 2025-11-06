@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 function Dashboard() {
   const [cryptocurrencies, setCryptocurrencies] = useState([]);
@@ -15,11 +15,11 @@ function Dashboard() {
 
   const fetchCryptocurrencies = async () => {
     try {
-      const response = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+      const response = await api.get('/gecko/markets', {
         params: {
           vs_currency: 'usd',
           order: 'market_cap_desc',
-          per_page: 100, // Загружаем топ-100
+          per_page: 100,
           page: 1,
           sparkline: false,
         },

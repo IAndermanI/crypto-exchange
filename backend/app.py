@@ -74,6 +74,25 @@ def login():
     }), 200
 
 
+# Прокси для CoinGecko
+@app.route('/api/gecko/markets', methods=['GET'])
+def gecko_markets_proxy():
+    try:
+        response = requests.get('https://api.coingecko.com/api/v3/coins/markets', params=request.args)
+        response.raise_for_status()
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify(error=str(e)), 500
+
+@app.route('/api/gecko/coins/<coin_id>', methods=['GET'])
+def gecko_coin_detail_proxy(coin_id):
+    try:
+        response = requests.get(f'https://api.coingecko.com/api/v3/coins/{coin_id}')
+        response.raise_for_status()
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify(error=str(e)), 500
+
 # Покупка криптовалюты
 @app.route('/api/buy', methods=['POST'])
 @jwt_required()

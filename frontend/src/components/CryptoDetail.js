@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import axios from 'axios';
 
 function CryptoDetail() {
   const { id } = useParams(); // Получаем id из URL
@@ -18,12 +17,12 @@ function CryptoDetail() {
       setLoading(true);
 
       // Параллельные запросы
-      const [coinGeckoResponse, portfolioResponse] = await Promise.all([
-        axios.get(`https://api.coingecko.com/api/v3/coins/${id}`),
-        api.get('/portfolio') 
+      const [coinDetailResponse, portfolioResponse] = await Promise.all([
+        api.get(`/gecko/coins/${id}`),
+        api.get('/portfolio')
       ]);
 
-      const coinData = coinGeckoResponse.data;
+      const coinData = coinDetailResponse.data;
       const portfolioData = portfolioResponse.data;
 
       // Ищем актив в портфеле пользователя

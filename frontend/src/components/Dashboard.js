@@ -44,8 +44,8 @@ function Dashboard() {
     }
   };
 
-  const handleCryptoClick = (id) => {
-    navigate(`/crypto/${id}`);
+  const handleCryptoClick = (coingecko_id) => {
+    navigate(`/crypto/${coingecko_id}`);
   };
 
   const formatNumber = (num) => {

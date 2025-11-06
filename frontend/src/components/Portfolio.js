@@ -80,7 +80,7 @@ function Portfolio() {
                 <tr
                   key={holding.id}
                   className="holdings-row"
-                  onClick={() => navigate(`/crypto/${holding.crypto.id}`)}
+                  onClick={() => navigate(`/crypto/${holding.crypto.coingecko_id}`)}
                 >
                   <td className="name">{holding.crypto.name}</td>
                   <td className="symbol">{holding.crypto.symbol}</td>

@@ -80,18 +80,77 @@ def gecko_markets_proxy():
     try:
         response = requests.get('https://api.coingecko.com/api/v3/coins/markets', params=request.args)
         response.raise_for_status()
-        return jsonify(response.json()), response.status_code
-    except requests.exceptions.RequestException as e:
-        return jsonify(error=str(e)), 500
+        data = response.json()
+        
+        # Кэшируем данные в БД
+        for coin_data in data:
+            crypto = Cryptocurrency.query.filter_by(coingecko_id=coin_data['id']).first()
+            if not crypto:
+                crypto = Cryptocurrency(coingecko_id=coin_data['id'])
+                db.session.add(crypto)
+            
+            crypto.symbol = coin_data.get('symbol', '').upper()
+            crypto.name = coin_data.get('name', '')
+            crypto.current_price = coin_data.get('current_price')
+            crypto.market_cap = coin_data.get('market_cap')
+            crypto.volume_24h = coin_data.get('total_volume')
+            crypto.price_change_24h = coin_data.get('price_change_percentage_24h')
+            crypto.last_updated = datetime.utcnow()
+        
+        db.session.commit()
+        return jsonify(data), 200
+        
+    except requests.exceptions.RequestException:
+        # В случае ошибки возвращаем данные из нашей БД
+        cryptos = Cryptocurrency.query.order_by(Cryptocurrency.market_cap.desc()).all()
+        return jsonify([crypto.to_dict() for crypto in cryptos]), 200
 
-@app.route('/api/gecko/coins/<coin_id>', methods=['GET'])
+
+@app.route('/api/gecko/coin/<coin_id>', methods=['GET'])
 def gecko_coin_detail_proxy(coin_id):
     try:
         response = requests.get(f'https://api.coingecko.com/api/v3/coins/{coin_id}')
         response.raise_for_status()
-        return jsonify(response.json()), response.status_code
-    except requests.exceptions.RequestException as e:
-        return jsonify(error=str(e)), 500
+        data = response.json()
+        
+        # Кэшируем данные
+        crypto = Cryptocurrency.query.filter_by(coingecko_id=coin_id).first()
+        if not crypto:
+             crypto = Cryptocurrency(coingecko_id=coin_id)
+             db.session.add(crypto)
+
+        crypto.symbol = data.get('symbol', '').upper()
+        crypto.name = data.get('name', '')
+        if 'market_data' in data:
+            crypto.current_price = data['market_data'].get('current_price', {}).get('usd')
+            crypto.market_cap = data['market_data'].get('market_cap', {}).get('usd')
+            crypto.volume_24h = data['market_data'].get('total_volume', {}).get('usd')
+            crypto.price_change_24h = data['market_data'].get('price_change_percentage_24h')
+        crypto.last_updated = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify(data), 200
+        
+    except requests.exceptions.RequestException:
+        # В случае ошибки возвращаем данные из нашей БД
+        crypto = Cryptocurrency.query.filter_by(coingecko_id=coin_id).first()
+        if crypto:
+            # Формируем ответ, похожий на ответ от CoinGecko
+            return jsonify({
+                'id': crypto.coingecko_id,
+                'symbol': crypto.symbol,
+                'name': crypto.name,
+                'image': {'large': ''}, # Нет изображения в кэше
+                'description': {'en': 'Could not load description from CoinGecko.'},
+                'market_data': {
+                    'current_price': {'usd': crypto.current_price},
+                    'price_change_percentage_24h': crypto.price_change_24h,
+                    'market_cap': {'usd': crypto.market_cap},
+                    'total_volume': {'usd': crypto.volume_24h}
+                }
+            }), 200
+        else:
+            return jsonify(error="Coin not found in cache"), 404
 
 # Покупка криптовалюты
 @app.route('/api/buy', methods=['POST'])

@@ -111,9 +111,23 @@ def gecko_markets_proxy():
         return jsonify(data), 200
         
     except requests.exceptions.RequestException:
-        # В случае ошибки возвращаем данные из нашей БД
+        # В случае ошибки возвращаем данные из нашей БД, приводя их к формату CoinGecko
         cryptos = Cryptocurrency.query.order_by(Cryptocurrency.market_cap.desc()).all()
-        return jsonify([crypto.to_dict() for crypto in cryptos]), 200
+        
+        # Трансформируем данные в формат, который ожидает фронтенд (аналогичный CoinGecko)
+        formatted_cryptos = []
+        for crypto in cryptos:
+            formatted_cryptos.append({
+                'id': crypto.coingecko_id,
+                'symbol': crypto.symbol,
+                'name': crypto.name,
+                'current_price': crypto.current_price,
+                'market_cap': crypto.market_cap,
+                'total_volume': crypto.volume_24h,
+                'price_change_percentage_24h': crypto.price_change_24h,
+                'market_cap_rank': None # Добавляем недостающее поле
+            })
+        return jsonify(formatted_cryptos), 200
 
 
 @app.route('/api/gecko/coin/<coin_id>', methods=['GET'])

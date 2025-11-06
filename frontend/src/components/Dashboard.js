@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import axios from 'axios';
 
 function Dashboard() {
   const [cryptocurrencies, setCryptocurrencies] = useState([]);
@@ -9,32 +9,53 @@ function Dashboard() {
 
   useEffect(() => {
     fetchCryptocurrencies();
-    const interval = setInterval(fetchCryptocurrencies, 30000);
+    const interval = setInterval(fetchCryptocurrencies, 60000); // Обновление раз в минуту
     return () => clearInterval(interval);
   }, []);
 
   const fetchCryptocurrencies = async () => {
     try {
-      const response = await api.get('/cryptocurrencies');
-      setCryptocurrencies(response.data);
-      setLoading(false);
+      const response = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+        params: {
+          vs_currency: 'usd',
+          order: 'market_cap_desc',
+          per_page: 100, // Загружаем топ-100
+          page: 1,
+          sparkline: false,
+        },
+      });
+
+      const formattedData = response.data.map(coin => ({
+        id: coin.id,
+        symbol: coin.symbol.toUpperCase(),
+        name: coin.name,
+        current_price: coin.current_price,
+        price_change_24h: coin.price_change_percentage_24h,
+        market_cap: coin.market_cap,
+        volume_24h: coin.total_volume,
+        market_cap_rank: coin.market_cap_rank,
+      }));
+
+      setCryptocurrencies(formattedData);
     } catch (err) {
-      console.error('Ошибка загрузки данных:', err);
+      console.error('Ошибка загрузки данных с CoinGecko:', err);
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleCryptoClick = (symbol) => {
-    navigate(`/crypto/${symbol}`);
+  const handleCryptoClick = (id) => {
+    navigate(`/crypto/${id}`);
   };
 
   const formatNumber = (num) => {
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-    return num?.toLocaleString();
+    if (num === null || num === undefined) return 'N/A';
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+    return `$${num.toLocaleString()}`;
   };
 
-  if (loading) return <div className="loading">Загрузка...</div>;
+  if (loading) return <div className="loading">Загрузка рыночных данных...</div>;
 
   return (
     <div className="dashboard">
@@ -44,27 +65,29 @@ function Dashboard() {
           <span className="rank">#</span>
           <span className="name">Название</span>
           <span className="price">Цена</span>
-          <span className="change">24ч</span>
+          <span className="change">24ч %</span>
           <span className="market-cap">Капитализация</span>
           <span className="volume">Объем (24ч)</span>
         </div>
-        {cryptocurrencies.map((crypto, index) => (
+        {cryptocurrencies.map((crypto) => (
           <div
             key={crypto.id}
             className="crypto-row"
-            onClick={() => handleCryptoClick(crypto.symbol)}
+            onClick={() => handleCryptoClick(crypto.id)}
           >
-            <span className="rank">{index + 1}</span>
+            <span className="rank">{crypto.market_cap_rank}</span>
             <span className="name">
               <strong>{crypto.symbol}</strong>
               <small>{crypto.name}</small>
             </span>
-            <span className="price">${crypto.current_price?.toFixed(2)}</span>
-            <span className={`change ${crypto.price_change_24h >= 0 ? 'positive' : 'negative'}`}>
-              {crypto.price_change_24h >= 0 ? '+' : ''}{crypto.price_change_24h?.toFixed(2)}%
+            <span className="price">
+              ${crypto.current_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 })}
             </span>
-            <span className="market-cap">${formatNumber(crypto.market_cap)}</span>
-            <span className="volume">${formatNumber(crypto.volume_24h)}</span>
+            <span className={`change ${crypto.price_change_24h >= 0 ? 'positive' : 'negative'}`}>
+              {crypto.price_change_24h?.toFixed(2)}%
+            </span>
+            <span className="market-cap">{formatNumber(crypto.market_cap)}</span>
+            <span className="volume">{formatNumber(crypto.volume_24h)}</span>
           </div>
         ))}
       </div>

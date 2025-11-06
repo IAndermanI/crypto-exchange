@@ -65,20 +65,25 @@ function Portfolio() {
       <div className="holdings-section">
         <h3>Мои активы</h3>
         {portfolio.holdings && portfolio.holdings.length > 0 ? (
-          <div className="holdings-grid">
+          <div className="holdings-table">
+            <div className="holdings-header">
+              <span>Название</span>
+              <span>Символ</span>
+              <span>Количество</span>
+              <span>Текущая цена</span>
+              <span>Стоимость</span>
+            </div>
             {portfolio.holdings.map((holding) => (
               <div
                 key={holding.id}
-                className="holding-card"
+                className="holdings-row"
                 onClick={() => navigate(`/crypto/${holding.crypto.symbol}`)}
               >
-                <h4>{holding.crypto.name}</h4>
-                <p className="symbol">{holding.crypto.symbol}</p>
-                <p>Количество: {holding.amount}</p>
-                <p>Текущая цена: ${holding.crypto.current_price?.toFixed(2)}</p>
-                <p className="total-value">
-                  Стоимость: ${holding.total_value?.toFixed(2)}
-                </p>
+                <span className="name">{holding.crypto.name}</span>
+                <span className="symbol">{holding.crypto.symbol}</span>
+                <span>{holding.amount}</span>
+                <span>${holding.crypto.current_price?.toFixed(2)}</span>
+                <span className="total-value">${holding.total_value?.toFixed(2)}</span>
               </div>
             ))}
           </div>

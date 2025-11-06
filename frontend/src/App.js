@@ -64,7 +64,7 @@ function App() {
             <Route path="/portfolio" element={
               isAuthenticated ? <Portfolio /> : <Navigate to="/login" />
             } />
-            <Route path="/crypto/:symbol" element={
+            <Route path="/crypto/:id" element={
               isAuthenticated ? <CryptoDetail /> : <Navigate to="/login" />
             } />
             <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />

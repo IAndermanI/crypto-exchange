@@ -84,12 +84,20 @@ def gecko_markets_proxy():
         
         # Кэшируем данные в БД
         for coin_data in data:
-            crypto = Cryptocurrency.query.filter_by(coingecko_id=coin_data['id']).first()
+            symbol = coin_data.get('symbol', '').upper()
+            if not symbol:
+                continue
+
+            # Ищем монету по уникальному символу
+            crypto = Cryptocurrency.query.filter_by(symbol=symbol).first()
+            
             if not crypto:
-                crypto = Cryptocurrency(coingecko_id=coin_data['id'])
+                # Если монеты с таким символом нет, создаем новую
+                crypto = Cryptocurrency(symbol=symbol)
                 db.session.add(crypto)
             
-            crypto.symbol = coin_data.get('symbol', '').upper()
+            # Обновляем данные монеты
+            crypto.coingecko_id = coin_data.get('id')
             crypto.name = coin_data.get('name', '')
             crypto.current_price = coin_data.get('current_price')
             crypto.market_cap = coin_data.get('market_cap')
@@ -114,12 +122,16 @@ def gecko_coin_detail_proxy(coin_id):
         data = response.json()
         
         # Кэшируем данные
-        crypto = Cryptocurrency.query.filter_by(coingecko_id=coin_id).first()
+        symbol = data.get('symbol', '').upper()
+        if not symbol:
+            return jsonify(data), 200 # Не кэшируем, если нет символа
+
+        crypto = Cryptocurrency.query.filter_by(symbol=symbol).first()
         if not crypto:
-             crypto = Cryptocurrency(coingecko_id=coin_id)
+             crypto = Cryptocurrency(symbol=symbol)
              db.session.add(crypto)
 
-        crypto.symbol = data.get('symbol', '').upper()
+        crypto.coingecko_id = coin_id
         crypto.name = data.get('name', '')
         if 'market_data' in data:
             crypto.current_price = data['market_data'].get('current_price', {}).get('usd')
@@ -181,10 +193,14 @@ def buy_crypto():
         return jsonify({'error': 'Ошибка при запросе к CoinGecko'}), 500
 
     # Находим или создаем запись в нашей БД
-    crypto = Cryptocurrency.query.filter_by(coingecko_id=coingecko_id).first()
+    crypto = Cryptocurrency.query.filter_by(symbol=symbol).first()
     if not crypto:
         crypto = Cryptocurrency(symbol=symbol, name=name, coingecko_id=coingecko_id)
         db.session.add(crypto)
+    else:
+        # Обновим данные, если монета уже есть
+        crypto.coingecko_id = coingecko_id
+        crypto.name = name
     
     # Обновляем цену в нашей БД для истории
     crypto.current_price = current_price

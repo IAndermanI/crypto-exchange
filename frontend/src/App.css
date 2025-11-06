@@ -1,3 +1,18 @@
+:root {
+  --bg-primary: #121829;
+  --bg-secondary: #1b2135;
+  --bg-tertiary: #242c41;
+  --accent-primary: #4a69ff;
+  --accent-primary-hover: #3b54cc;
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0b8;
+  --text-on-accent: #ffffff;
+  --border-color: #2e3750;
+  --success-color: #22c55e;
+  --error-color: #ef4444;
+  --shadow-color: rgba(0, 0, 0, 0.2);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,70 +20,118 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100vh;
-  color: #333;
 }
 
 .App {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Общие стили */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+}
+
+.error, .success {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+}
+
+.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
 }
 
 /* Навигационная панель */
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
+  background-color: var(--bg-secondary);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 10px var(--shadow-color);
+  flex-shrink: 0;
 }
 
 .navbar h1 {
-  color: #667eea;
+  color: var(--text-primary);
   font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .nav-links {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
 }
 
 .nav-links a {
   text-decoration: none;
-  color: #333;
+  color: var(--text-secondary);
   padding: 0.5rem 1rem;
-  border-radius: 5px;
-  transition: background 0.3s;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: color 0.3s, background-color 0.3s;
 }
 
-.nav-links a:hover {
-  background: rgba(102, 126, 234, 0.1);
+.nav-links a:hover, .nav-links a.active {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
 }
 
 .nav-links button {
-  background: #f44336;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
   padding: 0.5rem 1rem;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s;
+  font-weight: 500;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .nav-links button:hover {
-  background: #da190b;
+  background-color: var(--error-color);
+  color: var(--text-on-accent);
 }
 
 .user-info {
-  background: #4caf50;
-  color: white;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   padding: 0.5rem 1rem;
-  border-radius: 5px;
+  border-radius: 6px;
   margin-left: 1rem;
+  font-weight: 500;
+}
+
+/* Основной контент */
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* Формы авторизации */
@@ -76,267 +139,228 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 70px);
+  flex-grow: 1;
   padding: 2rem;
 }
 
 .auth-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background-color: var(--bg-secondary);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px var(--shadow-color);
   width: 100%;
   max-width: 400px;
+  border: 1px solid var(--border-color);
 }
 
 .auth-form h2 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   text-align: center;
-  color: #667eea;
+  color: var(--text-primary);
+  font-size: 1.8rem;
 }
 
 .auth-form input {
   width: 100%;
-  padding: 0.75rem;
+  padding: 1rem;
   margin-bottom: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  border-radius: 6px;
   font-size: 1rem;
+  color: var(--text-primary);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(74, 105, 255, 0.3);
 }
 
 .auth-form button {
   width: 100%;
-  padding: 0.75rem;
-  background: #667eea;
-  color: white;
+  padding: 1rem;
+  background-color: var(--accent-primary);
+  color: var(--text-on-accent);
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.3s;
 }
 
 .auth-form button:hover {
-  background: #5a67d8;
+  background-color: var(--accent-primary-hover);
 }
 
 .auth-form p {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  color: var(--text-secondary);
 }
 
 .auth-form a {
-  color: #667eea;
+  color: var(--accent-primary);
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
 }
 
-/* Dashboard */
-.dashboard {
+.auth-form a:hover {
+  text-decoration: underline;
+  color: var(--accent-primary-hover);
+}
+
+/* Dashboard & Portfolio */
+.dashboard, .portfolio {
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
-.dashboard h2 {
-  color: white;
+.dashboard h2, .portfolio h2 {
+  color: var(--text-primary);
   margin-bottom: 2rem;
-  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
-.crypto-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.crypto-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.crypto-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
-}
-
-.crypto-card h3 {
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.crypto-symbol {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-}
-
-.crypto-price {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.price-change {
-  font-weight: 500;
-}
-
-.price-change.positive {
-  color: #4caf50;
-}
-
-.price-change.negative {
-  color: #f44336;
-}
-
-/* Dashboard List View */
+/* Стили для табличного вида */
 .crypto-list {
-  background: white;
-  border-radius: 10px;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px var(--shadow-color);
 }
 
-.crypto-header {
+.crypto-header, .crypto-row {
   display: grid;
-  grid-template-columns: 50px 200px 120px 100px 150px 150px;
-  padding: 1rem;
-  background: #f8f9fa;
-  font-weight: 600;
-  color: #666;
-  font-size: 0.9rem;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-.crypto-row {
-  display: grid;
-  grid-template-columns: 50px 200px 120px 100px 150px 150px;
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-  transition: background 0.3s;
+  grid-template-columns: 50px 3fr 2fr 2fr 2fr 2fr;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
   align-items: center;
 }
 
+.crypto-header {
+  background-color: var(--bg-tertiary);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.crypto-row {
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.crypto-row:last-child {
+  border-bottom: none;
+}
+
 .crypto-row:hover {
-  background: #f8f9fa;
+  background-color: var(--bg-tertiary);
 }
 
 .crypto-row .rank {
-  color: #999;
-  font-weight: 500;
+  color: var(--text-secondary);
+  font-weight: 700;
 }
 
 .crypto-row .name {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
 }
 
 .crypto-row .name strong {
-  color: #333;
+  color: var(--text-primary);
   font-size: 1rem;
+  font-weight: 600;
 }
 
 .crypto-row .name small {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.85rem;
 }
 
 .crypto-row .price {
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
-.crypto-row .change.positive {
-  color: #4caf50;
-  font-weight: 500;
+.price-change.positive, .crypto-row .change.positive {
+  color: var(--success-color);
+  font-weight: 600;
 }
 
-.crypto-row .change.negative {
-  color: #f44336;
-  font-weight: 500;
+.price-change.negative, .crypto-row .change.negative {
+  color: var(--error-color);
+  font-weight: 600;
 }
 
 .crypto-row .market-cap,
 .crypto-row .volume {
-  color: #555;
-}
-
-/* Адаптивность для списка */
-@media (max-width: 1024px) {
-  .crypto-header,
-  .crypto-row {
-    grid-template-columns: 40px 150px 100px 80px 120px;
-  }
-  
-  .crypto-header .volume,
-  .crypto-row .volume {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .crypto-header,
-  .crypto-row {
-    grid-template-columns: 40px 1fr 100px 80px;
-  }
-  
-  .crypto-header .market-cap,
-  .crypto-row .market-cap {
-    display: none;
-  }
+  color: var(--text-secondary);
 }
 
 /* Детальная страница криптовалюты */
 .crypto-detail {
   padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 10px;
-  margin-top: 2rem;
+  max-width: 900px;
+  margin: 2rem auto;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
 }
 
 .back-button {
-  background: #667eea;
-  color: white;
+  background-color: var(--accent-primary);
+  color: var(--text-on-accent);
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
   cursor: pointer;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  transition: background-color 0.3s;
 }
 
-.crypto-header {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 1rem;
+.back-button:hover {
+  background-color: var(--accent-primary-hover);
+}
+
+.crypto-detail .crypto-header {
+  background: none;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 0 1.5rem 0;
   margin-bottom: 1.5rem;
+  grid-template-columns: 1fr;
 }
 
-.crypto-header h2 {
-  color: #333;
+.crypto-detail .crypto-header h2 {
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .current-price {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #667eea;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-primary);
 }
 
 .crypto-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
   margin-bottom: 2rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 5px;
+  padding: 1.5rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
 }
 
 .stat {
@@ -345,212 +369,149 @@ body {
 }
 
 .stat span:first-child {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.9rem;
-  margin-bottom: 0.25rem;
-}
-
-.stat span:last-child {
-  font-weight: 500;
-  color: #333;
-}
-
-.user-holdings {
-  background: #e8f5e9;
-  padding: 1rem;
-  border-radius: 5px;
-  margin-bottom: 2rem;
-}
-
-.user-holdings h3 {
-  color: #4caf50;
   margin-bottom: 0.5rem;
 }
 
+.stat span:last-child {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
 .transaction-form {
-  background: #f8f9fa;
+  background-color: var(--bg-tertiary);
   padding: 1.5rem;
-  border-radius: 5px;
+  border-radius: 8px;
 }
 
 .transaction-form h3 {
-  margin-bottom: 1rem;
-  color: #333;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
 }
 
 .transaction-type {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .transaction-type button {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid #ddd;
-  background: white;
-  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: 600;
   transition: all 0.3s;
 }
 
 .transaction-type button.active {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
+  background-color: var(--accent-primary);
+  color: var(--text-on-accent);
+  border-color: var(--accent-primary);
 }
 
 .transaction-form input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  border-radius: 6px;
   margin-bottom: 1rem;
-  font-size: 1rem;
+  color: var(--text-primary);
 }
 
 .transaction-info {
-  background: white;
+  background-color: var(--bg-secondary);
   padding: 1rem;
-  border-radius: 5px;
+  border-radius: 6px;
   margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
 }
 
 .transaction-info p {
   margin-bottom: 0.5rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .transaction-info p:last-child {
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary);
   font-size: 1.1rem;
 }
 
 .transaction-button {
   width: 100%;
   padding: 1rem;
-  background: #667eea;
-  color: white;
+  background-color: var(--accent-primary);
+  color: var(--text-on-accent);
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.3s;
 }
 
 .transaction-button:hover {
-  background: #5a67d8;
+  background-color: var(--accent-primary-hover);
 }
 
 /* Портфель */
-.portfolio {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.portfolio h2 {
-  color: white;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
 .portfolio-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
 .summary-card {
-  background: white;
+  background-color: var(--bg-secondary);
   padding: 1.5rem;
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 15px var(--shadow-color);
 }
 
 .summary-card h3 {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
   text-transform: uppercase;
+  font-weight: 500;
 }
 
 .summary-card .amount {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .summary-card .amount.total {
-  color: #667eea;
+  color: var(--accent-primary);
 }
 
 .holdings-section,
 .transactions-section {
-  background: white;
+  background-color: var(--bg-secondary);
   padding: 2rem;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
 }
 
 .holdings-section h3,
 .transactions-section h3 {
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #667eea;
-  padding-bottom: 0.5rem;
-}
-
-.holdings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.holding-card {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-.holding-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.holding-card h4 {
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.holding-card .symbol {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-}
-
-.holding-card p {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
-}
-
-.holding-card .total-value {
-  color: #667eea;
-  font-weight: bold;
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
-}
-
-.no-holdings {
-  text-align: center;
-  color: #666;
-  padding: 2rem;
+  border-bottom: 2px solid var(--accent-primary);
+  padding-bottom: 0.75rem;
+  font-size: 1.5rem;
 }
 
 .transactions-list {
@@ -560,103 +521,109 @@ body {
 }
 
 .transaction-item {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 5px;
+  background-color: var(--bg-tertiary);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
   display: grid;
-  grid-template-columns: 150px 1fr auto;
+  grid-template-columns: 120px 1fr auto;
   gap: 1rem;
   align-items: center;
 }
 
-.tx-type {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.tx-type span:first-child {
+.tx-type span {
   font-weight: bold;
-  padding: 0.25rem 0.5rem;
-  border-radius: 3px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
   text-align: center;
+  font-size: 0.9rem;
 }
 
 .tx-type span.buy {
-  background: #e8f5e9;
-  color: #4caf50;
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--success-color);
 }
 
 .tx-type span.sell {
-  background: #ffebee;
-  color: #f44336;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
 }
 
 .tx-details {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
 }
 
 .tx-details span {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
+.tx-details strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
 .tx-date {
-  color: #999;
+  color: var(--text-secondary);
   font-size: 0.85rem;
-}
-
-/* Общие стили */
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-  color: white;
-  font-size: 1.2rem;
-}
-
-.error {
-  background: #ffebee;
-  color: #c62828;
-  padding: 0.75rem;
-  border-radius: 5px;
-  margin-bottom: 1rem;
-}
-
-.success {
-  background: #e8f5e9;
-  color: #2e7d32;
-  padding: 0.75rem;
-  border-radius: 5px;
-  margin-bottom: 1rem;
+  justify-self: end;
 }
 
 /* Адаптивность */
+@media (max-width: 1024px) {
+  .crypto-header,
+  .crypto-row {
+    grid-template-columns: 40px 2fr 1.5fr 1.5fr;
+    gap: 0.75rem;
+  }
+  
+  .crypto-header .volume,
+  .crypto-row .volume,
+  .crypto-header .market-cap,
+  .crypto-row .market-cap {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
   .navbar {
     flex-direction: column;
     gap: 1rem;
+    padding: 1rem;
   }
 
   .nav-links {
     flex-wrap: wrap;
     justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .dashboard, .portfolio, .crypto-detail {
+    padding: 1rem;
   }
 
-  .crypto-grid {
-    grid-template-columns: 1fr;
+  .crypto-header,
+  .crypto-row {
+    grid-template-columns: 30px 1fr 1fr;
+    padding: 0.75rem;
+  }
+
+  .crypto-header .change,
+  .crypto-row .change {
+    display: none;
   }
 
   .transaction-item {
     grid-template-columns: 1fr;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
-  .tx-details {
-    flex-direction: column;
-    gap: 0.25rem;
+  .tx-date {
+    justify-self: start;
   }
 }

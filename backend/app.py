@@ -22,61 +22,6 @@ COMMISSION_RATE = 0.015  # 1.5%
 jwt = JWTManager(app)
 init_db(app)
 
-# Функция для обновления цен криптовалют
-def update_crypto_prices():
-    try:
-        # Топ-20 криптовалют по капитализации
-        crypto_ids = 'bitcoin,ethereum,tether,binancecoin,solana,xrp,usd-coin,cardano,avalanche-2,dogecoin,tron,chainlink,polygon,wrapped-bitcoin,polkadot,shiba-inu,dai,litecoin,cosmos,uniswap'
-        url = f'https://api.coingecko.com/api/v3/simple/price?ids={crypto_ids}&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true'
-        
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            
-            # Расширенный маппинг
-            coin_map = {
-                'bitcoin': ('BTC', 'Bitcoin'),
-                'ethereum': ('ETH', 'Ethereum'),
-                'tether': ('USDT', 'Tether'),
-                'binancecoin': ('BNB', 'Binance Coin'),
-                'solana': ('SOL', 'Solana'),
-                'xrp': ('XRP', 'Ripple'),
-                'usd-coin': ('USDC', 'USD Coin'),
-                'cardano': ('ADA', 'Cardano'),
-                'avalanche-2': ('AVAX', 'Avalanche'),
-                'dogecoin': ('DOGE', 'Dogecoin'),
-                'tron': ('TRX', 'TRON'),
-                'chainlink': ('LINK', 'Chainlink'),
-                'polygon': ('MATIC', 'Polygon'),
-                'wrapped-bitcoin': ('WBTC', 'Wrapped Bitcoin'),
-                'polkadot': ('DOT', 'Polkadot'),
-                'shiba-inu': ('SHIB', 'Shiba Inu'),
-                'dai': ('DAI', 'Dai'),
-                'litecoin': ('LTC', 'Litecoin'),
-                'cosmos': ('ATOM', 'Cosmos'),
-                'uniswap': ('UNI', 'Uniswap')
-            }
-            
-            for coin_id, coin_data in data.items():
-                if coin_id in coin_map:
-                    symbol, name = coin_map[coin_id]
-                    
-                    crypto = Cryptocurrency.query.filter_by(symbol=symbol).first()
-                    if not crypto:
-                        crypto = Cryptocurrency(symbol=symbol, name=name)
-                        db.session.add(crypto)
-                    
-                    crypto.current_price = coin_data.get('usd', 0)
-                    crypto.market_cap = coin_data.get('usd_market_cap', 0)
-                    crypto.volume_24h = coin_data.get('usd_24h_vol', 0)
-                    crypto.price_change_24h = coin_data.get('usd_24h_change', 0)
-                    crypto.last_updated = datetime.utcnow()
-            
-            db.session.commit()
-            return True
-    except Exception as e:
-        print(f"Error updating prices: {e}")
-        return False
 
 
 # Регистрация
@@ -128,33 +73,6 @@ def login():
         'user': user.to_dict()
     }), 200
 
-# Получить список криптовалют
-@app.route('/api/cryptocurrencies', methods=['GET'])
-def get_cryptocurrencies():
-    update_crypto_prices()  # Обновляем цены
-    # Сортируем по капитализации (от большей к меньшей)
-    cryptos = Cryptocurrency.query.order_by(Cryptocurrency.market_cap.desc()).all()
-    return jsonify([crypto.to_dict() for crypto in cryptos]), 200
-
-
-# Получить информацию о конкретной криптовалюте
-@app.route('/api/cryptocurrency/<symbol>', methods=['GET'])
-@jwt_required()
-def get_cryptocurrency(symbol):
-    crypto = Cryptocurrency.query.filter_by(symbol=symbol.upper()).first()
-    if not crypto:
-        return jsonify({'error': 'Криптовалюта не найдена'}), 404
-    
-    user_id = get_jwt_identity()
-    holding = Holdings.query.filter_by(user_id=user_id, crypto_id=crypto.id).first()
-    
-    response_data = crypto.to_dict()
-    response_data['user_holdings'] = {
-        'amount': holding.amount if holding else 0,
-        'total_value': (holding.amount * crypto.current_price) if holding else 0
-    }
-    
-    return jsonify(response_data), 200
 
 # Покупка криптовалюты
 @app.route('/api/buy', methods=['POST'])
@@ -164,18 +82,35 @@ def buy_crypto():
     user = User.query.get(user_id)
     
     data = request.json
-    symbol = data.get('symbol')
+    coingecko_id = data.get('coingecko_id')
     amount = float(data.get('amount', 0))
     
     if amount <= 0:
         return jsonify({'error': 'Неверное количество'}), 400
-    
-    crypto = Cryptocurrency.query.filter_by(symbol=symbol.upper()).first()
+
+    # Получаем актуальные данные с CoinGecko
+    try:
+        response = requests.get(f'https://api.coingecko.com/api/v3/coins/{coingecko_id}')
+        if response.status_code != 200:
+            return jsonify({'error': 'Не удалось получить данные о криптовалюте'}), 404
+        coin_data = response.json()
+        current_price = coin_data['market_data']['current_price']['usd']
+        symbol = coin_data['symbol'].upper()
+        name = coin_data['name']
+    except Exception:
+        return jsonify({'error': 'Ошибка при запросе к CoinGecko'}), 500
+
+    # Находим или создаем запись в нашей БД
+    crypto = Cryptocurrency.query.filter_by(coingecko_id=coingecko_id).first()
     if not crypto:
-        return jsonify({'error': 'Криптовалюта не найдена'}), 404
+        crypto = Cryptocurrency(symbol=symbol, name=name, coingecko_id=coingecko_id)
+        db.session.add(crypto)
+    
+    # Обновляем цену в нашей БД для истории
+    crypto.current_price = current_price
     
     # Рассчитываем стоимость с комиссией
-    base_cost = amount * crypto.current_price
+    base_cost = amount * current_price
     fee = base_cost * COMMISSION_RATE
     total_cost = base_cost + fee
     
@@ -224,23 +159,35 @@ def sell_crypto():
     user = User.query.get(user_id)
     
     data = request.json
-    symbol = data.get('symbol')
+    coingecko_id = data.get('coingecko_id')
     amount = float(data.get('amount', 0))
-    
+
     if amount <= 0:
         return jsonify({'error': 'Неверное количество'}), 400
-    
-    crypto = Cryptocurrency.query.filter_by(symbol=symbol.upper()).first()
+
+    # Получаем актуальные данные с CoinGecko
+    try:
+        response = requests.get(f'https://api.coingecko.com/api/v3/coins/{coingecko_id}')
+        if response.status_code != 200:
+            return jsonify({'error': 'Не удалось получить данные о криптовалюте'}), 404
+        coin_data = response.json()
+        current_price = coin_data['market_data']['current_price']['usd']
+        symbol = coin_data['symbol'].upper()
+    except Exception:
+        return jsonify({'error': 'Ошибка при запросе к CoinGecko'}), 500
+
+    crypto = Cryptocurrency.query.filter_by(coingecko_id=coingecko_id).first()
     if not crypto:
-        return jsonify({'error': 'Криптовалюта не найдена'}), 404
-    
+        # Этого не должно произойти, если пользователь покупал через наш сервис
+        return jsonify({'error': 'Криптовалюта не найдена в вашей базе данных'}), 404
+
     # Проверяем наличие криптовалюты
     holding = Holdings.query.filter_by(user_id=user_id, crypto_id=crypto.id).first()
     if not holding or holding.amount < amount:
-        return jsonify({'error': 'Недостаточно криптовалюты'}), 400
-    
+        return jsonify({'error': 'Недостаточно криптовалюты для продажи'}), 400
+
     # Рассчитываем выручку с комиссией
-    base_revenue = amount * crypto.current_price
+    base_revenue = amount * current_price
     fee = base_revenue * COMMISSION_RATE
     total_revenue = base_revenue - fee
     
@@ -315,7 +262,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         # Инициализируем базу данных с начальными криптовалютами
-        if not Cryptocurrency.query.first():
-            update_crypto_prices()
+        # Логика инициализации цен удалена, так как она больше не нужна
     
     app.run(host='0.0.0.0', port=5000, debug=True)

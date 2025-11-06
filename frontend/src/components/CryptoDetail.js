@@ -78,7 +78,7 @@ function CryptoDetail() {
     try {
       const endpoint = transactionType === 'buy' ? '/buy' : '/sell';
       const response = await api.post(endpoint, {
-        symbol: crypto.symbol, // Используем symbol для транзакции
+        coingecko_id: crypto.id, // Отправляем coingecko_id
         amount: parseFloat(amount)
       });
       

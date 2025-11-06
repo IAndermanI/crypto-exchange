@@ -552,64 +552,6 @@ body {
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;
-/* Таблица активов в портфеле */
-.holdings-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.holdings-header, .holdings-row {
-  display: grid;
-  grid-template-columns: 3fr 1fr 2fr 2fr 2fr;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  align-items: center;
-  text-align: left;
-}
-
-.holdings-header {
-  background-color: var(--bg-tertiary);
-  font-weight: 600;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--border-color);
-  border-radius: 8px 8px 0 0;
-}
-
-.holdings-row {
-  border-bottom: 1px solid var(--border-color);
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.holdings-row:last-child {
-  border-bottom: none;
-}
-
-.holdings-row:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.holdings-row .name {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.holdings-row .symbol {
-  color: var(--text-secondary);
-}
-
-.holdings-row .total-value {
-  font-weight: 600;
-  color: var(--accent-primary);
-}
-
-.no-holdings {
-  text-align: center;
-  color: var(--text-secondary);
-  padding: 3rem;
-}
 }
 
 .tx-details span {
@@ -626,6 +568,63 @@ body {
   color: var(--text-secondary);
   font-size: 0.85rem;
   justify-self: end;
+}
+
+/* Таблица активов в портфеле */
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.holdings-table th, .holdings-table td {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.holdings-table th {
+  background-color: var(--bg-tertiary);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.holdings-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.holdings-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.holdings-table tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.holdings-table .name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.holdings-table .symbol {
+  color: var(--text-secondary);
+}
+
+.holdings-table .total-value {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.no-holdings {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 3rem;
 }
 
 /* Адаптивность */

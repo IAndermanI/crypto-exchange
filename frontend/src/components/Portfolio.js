@@ -65,28 +65,32 @@ function Portfolio() {
       <div className="holdings-section">
         <h3>Мои активы</h3>
         {portfolio.holdings && portfolio.holdings.length > 0 ? (
-          <div className="holdings-table">
-            <div className="holdings-header">
-              <span>Название</span>
-              <span>Символ</span>
-              <span>Количество</span>
-              <span>Текущая цена</span>
-              <span>Стоимость</span>
-            </div>
-            {portfolio.holdings.map((holding) => (
-              <div
-                key={holding.id}
-                className="holdings-row"
-                onClick={() => navigate(`/crypto/${holding.crypto.symbol}`)}
-              >
-                <span className="name">{holding.crypto.name}</span>
-                <span className="symbol">{holding.crypto.symbol}</span>
-                <span>{holding.amount}</span>
-                <span>${holding.crypto.current_price?.toFixed(2)}</span>
-                <span className="total-value">${holding.total_value?.toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
+          <table className="holdings-table">
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th>Символ</th>
+                <th>Количество</th>
+                <th>Текущая цена</th>
+                <th>Стоимость</th>
+              </tr>
+            </thead>
+            <tbody>
+              {portfolio.holdings.map((holding) => (
+                <tr
+                  key={holding.id}
+                  className="holdings-row"
+                  onClick={() => navigate(`/crypto/${holding.crypto.id}`)}
+                >
+                  <td className="name">{holding.crypto.name}</td>
+                  <td className="symbol">{holding.crypto.symbol}</td>
+                  <td>{holding.amount}</td>
+                  <td>${holding.crypto.current_price?.toFixed(2)}</td>
+                  <td className="total-value">${holding.total_value?.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         ) : (
           <p className="no-holdings">У вас пока нет криптовалют</p>
         )}

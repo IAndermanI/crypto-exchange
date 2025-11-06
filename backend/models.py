@@ -36,7 +36,8 @@ class Cryptocurrency(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     symbol = db.Column(db.String(10), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    current_price = db.Column(db.Float, nullable=False)
+    coingecko_id = db.Column(db.String(100), unique=True, nullable=True)
+    current_price = db.Column(db.Float, nullable=True)
     market_cap = db.Column(db.Float)
     volume_24h = db.Column(db.Float)
     price_change_24h = db.Column(db.Float)
@@ -47,6 +48,7 @@ class Cryptocurrency(db.Model):
             'id': self.id,
             'symbol': self.symbol,
             'name': self.name,
+            'coingecko_id': self.coingecko_id,
             'current_price': self.current_price,
             'market_cap': self.market_cap,
             'volume_24h': self.volume_24h,

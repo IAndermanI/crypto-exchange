@@ -16,6 +16,9 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 # ИСПРАВЛЕННЫЙ CORS - разрешаем всё для простоты
 CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization"]}})
 
+# Ставка комиссии
+COMMISSION_RATE = 0.015  # 1.5%
+
 jwt = JWTManager(app)
 init_db(app)
 

@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://84.201.180.47:5000/api';
-
-console.log('API URL:', API_URL);
-
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -58,5 +54,4 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-export const COMMISSION = 0.015; // 1.5%
 export default api;

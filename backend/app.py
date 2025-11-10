@@ -129,7 +129,7 @@ def gecko_markets_proxy():
         return jsonify(formatted_cryptos), 200
 
 
-@app.route('/api/gecko/coin/<coin_id>', methods=['GET'])
+@app.route('/api/gecko/coins/<coin_id>', methods=['GET'])
 def gecko_coin_detail_proxy(coin_id):
     try:
         response = requests.get(f'https://api.coingecko.com/api/v3/coins/{coin_id}')

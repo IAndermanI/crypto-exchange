@@ -50,4 +50,16 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+export const getOrders = async (filters) => {
+    const { data } = await api.get('/orders', { params: filters });
+    return data;
+};
+
+export const createOrder = async (orderData) => {
+    return await api.post('/orders', orderData);
+};
+
+export const executeOrder = async (orderId) => {
+    return await api.post(`/orders/${orderId}/execute`);
+};
 export default api;

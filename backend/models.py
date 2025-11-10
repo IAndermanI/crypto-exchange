@@ -88,3 +88,19 @@ class Transaction(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     cryptocurrency = db.relationship('Cryptocurrency', backref='transactions')
+
+
+class Order(db.Model):
+    __tablename__ = 'orders'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    crypto_id = db.Column(db.Integer, db.ForeignKey('cryptocurrencies.id'), nullable=False)
+    quantity = db.Column(db.Float, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    order_type = db.Column(db.String(4), nullable=False)  # 'buy' or 'sell'
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+
+    user = db.relationship('User', backref='orders')
+    cryptocurrency = db.relationship('Cryptocurrency', backref='orders')

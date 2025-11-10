@@ -8,6 +8,7 @@ function CryptoDetail() {
   const [crypto, setCrypto] = useState(null);
   const [amount, setAmount] = useState('');
   const [transactionType, setTransactionType] = useState('buy');
+  const [orderPrice, setOrderPrice] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -172,12 +173,54 @@ function CryptoDetail() {
         {message && <div className="success" style={{ marginTop: '1rem' }}>{message}</div>}
       </div>
       
+      <div className="transaction-form">
+        <h3>Выставить ордер на продажу</h3>
+        <input
+          type="number"
+          placeholder={`Количество ${crypto.symbol}`}
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          step="any"
+          min="0"
+        />
+        <input
+          type="number"
+          placeholder="Цена за единицу (USD)"
+          value={orderPrice}
+          onChange={(e) => setOrderPrice(e.target.value)}
+          step="any"
+          min="0"
+        />
+        <button className="transaction-button" onClick={handleCreateOrder} disabled={!amount || !orderPrice || amount <= 0 || orderPrice <= 0}>
+          Выставить ордер
+        </button>
+      </div>
+
       <div className="crypto-description" style={{ marginTop: '2rem' }}>
         <h3>О {crypto.name}</h3>
         <p dangerouslySetInnerHTML={{ __html: crypto.description }}></p>
       </div>
     </div>
   );
+
+  async function handleCreateOrder() {
+    setError('');
+    setMessage('');
+    try {
+      await api.post('/orders', {
+        crypto_id: crypto.id,
+        quantity: parseFloat(amount),
+        price: parseFloat(orderPrice),
+        order_type: 'sell'
+      });
+      setMessage('Ордер успешно выставлен!');
+      setAmount('');
+      setOrderPrice('');
+      navigate('/orders');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ошибка при создании ордера');
+    }
+  }
 }
 
 export default CryptoDetail;

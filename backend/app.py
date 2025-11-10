@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from database import db, init_db
-from models import User, Cryptocurrency, Holdings, Transaction
+from models import User, Cryptocurrency, Holdings, Transaction, Order
 import requests
 from datetime import datetime, timedelta
 import os
@@ -380,6 +380,46 @@ def get_transactions():
         'total': t.total_cost,
         'date': t.created_at.isoformat()
     } for t in transactions]), 200
+
+@app.route('/api/orders', methods=['GET'])
+def get_orders():
+    crypto_id = request.args.get('crypto_id')
+    sort_by = request.args.get('sort_by', 'timestamp')
+    order = request.args.get('order', 'desc')
+
+    query = Order.query.filter_by(is_active=True)
+
+    if crypto_id:
+        crypto = Cryptocurrency.query.filter_by(coingecko_id=crypto_id).first()
+        if crypto:
+            query = query.filter_by(crypto_id=crypto.id)
+
+    if hasattr(Order, sort_by):
+        if order == 'asc':
+            query = query.order_by(getattr(Order, sort_by).asc())
+        else:
+            query = query.order_by(getattr(Order, sort_by).desc())
+
+    orders = query.all()
+    
+    output = []
+    for o in orders:
+        user = User.query.get(o.user_id)
+        crypto = Cryptocurrency.query.get(o.crypto_id)
+        if user and crypto:
+            output.append({
+                'id': o.id,
+                'user': user.username,
+                'crypto_symbol': crypto.symbol,
+                'crypto_name': crypto.name,
+                'quantity': o.quantity,
+                'price': o.price,
+                'order_type': o.order_type,
+                'timestamp': o.timestamp.isoformat()
+            })
+
+    return jsonify(output)
+
 
 if __name__ == '__main__':
     with app.app_context():

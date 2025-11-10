@@ -5,6 +5,7 @@ import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Portfolio from './components/Portfolio';
 import CryptoDetail from './components/CryptoDetail';
+import Orders from './components/Orders';
 import './App.css';
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
             <div className="nav-links">
               <NavLink to="/dashboard">Рынок</NavLink>
               <NavLink to="/portfolio">Портфель</NavLink>
+              <NavLink to="/orders">Ордера</NavLink>
               <button onClick={handleLogout}>Выйти</button>
               {user && <span className="user-info">Баланс: ${user.balance_usd?.toFixed(2)}</span>}
             </div>
@@ -66,6 +68,9 @@ function App() {
             } />
             <Route path="/crypto/:id" element={
               isAuthenticated ? <CryptoDetail /> : <Navigate to="/login" />
+            } />
+            <Route path="/orders" element={
+              isAuthenticated ? <Orders /> : <Navigate to="/login" />
             } />
             <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
           </Routes>

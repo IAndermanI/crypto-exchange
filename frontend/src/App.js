@@ -27,6 +27,8 @@ function App() {
     localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthenticated(true);
     setUser(userData);
+    // Force re-render
+    window.location.reload();
   };
 
   const handleLogout = () => {

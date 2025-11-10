@@ -381,8 +381,13 @@ def get_transactions():
         'date': t.created_at.isoformat()
     } for t in transactions]), 200
 
-@app.route('/api/orders', methods=['GET'])
-def get_orders():
+@app.route('/api/orders', methods=['GET', 'POST'])
+@jwt_required()
+def handle_orders():
+    if request.method == 'POST':
+        return create_order()
+    
+    # Existing GET logic
     crypto_id = request.args.get('crypto_id')
     sort_by = request.args.get('sort_by', 'timestamp')
     order = request.args.get('order', 'desc')
@@ -420,6 +425,44 @@ def get_orders():
 
     return jsonify(output)
 
+def create_order():
+    data = request.get_json()
+    current_user_id = get_jwt_identity()
+
+    crypto_id = data.get('crypto_id')
+    quantity = data.get('quantity')
+    price = data.get('price')
+    order_type = data.get('order_type')
+
+    if not all([crypto_id, quantity, price, order_type]):
+        return jsonify({'message': 'Missing required fields'}), 400
+
+    if order_type not in ['buy', 'sell']:
+        return jsonify({'message': 'Invalid order type'}), 400
+    
+    user = User.query.get(current_user_id)
+    cryptocurrency = Cryptocurrency.query.filter_by(coingecko_id=crypto_id).first()
+
+    if not user or not cryptocurrency:
+        return jsonify({'message': 'User or cryptocurrency not found'}), 404
+
+    if order_type == 'sell':
+        portfolio_item = Holdings.query.filter_by(user_id=current_user_id, crypto_id=cryptocurrency.id).first()
+        if not portfolio_item or portfolio_item.amount < quantity:
+            return jsonify({'message': 'Insufficient funds to place sell order'}), 400
+
+    new_order = Order(
+        user_id=current_user_id,
+        crypto_id=cryptocurrency.id,
+        quantity=quantity,
+        price=price,
+        order_type=order_type
+    )
+
+    db.session.add(new_order)
+    db.session.commit()
+
+    return jsonify({'message': 'Order created successfully'}), 201
 
 if __name__ == '__main__':
     with app.app_context():

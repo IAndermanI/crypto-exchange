@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import api, { createOrder } from '../services/api';
 
 function CryptoDetail() {
   const { id } = useParams(); // Получаем id из URL
@@ -207,7 +207,7 @@ function CryptoDetail() {
     setError('');
     setMessage('');
     try {
-      await api.post('/orders', {
+      await createOrder({
         crypto_id: crypto.id,
         quantity: parseFloat(amount),
         price: parseFloat(orderPrice),

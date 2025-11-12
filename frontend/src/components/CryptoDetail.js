@@ -88,10 +88,13 @@ function CryptoDetail() {
       await fetchData(); // Обновляем все данные
       
       // Обновляем баланс в localStorage
-      if (response.data.transaction) {
+      if (response.data.transaction && response.data.transaction.new_balance !== undefined) {
+        const newBalance = response.data.transaction.new_balance;
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        userData.balance_usd = response.data.transaction.new_balance;
+        userData.balance_usd = newBalance;
         localStorage.setItem('user', JSON.stringify(userData));
+        // Создаем и отправляем кастомное событие
+        window.dispatchEvent(new CustomEvent('balanceUpdated', { detail: { newBalance } }));
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Ошибка транзакции');

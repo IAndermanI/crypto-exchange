@@ -548,7 +548,10 @@ def execute_order_route(order_id):
 
     db.session.commit()
 
-    return jsonify({'message': 'Order executed successfully'}), 200
+    return jsonify({
+        'message': 'Order executed successfully',
+        'new_balance': buyer.balance_usd
+    }), 200
 
 
 if __name__ == '__main__':

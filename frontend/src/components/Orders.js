@@ -34,8 +34,15 @@ const Orders = () => {
 
     const handleExecuteOrder = async (orderId) => {
         try {
-            await executeOrder(orderId);
+            const response = await executeOrder(orderId);
             fetchOrders(); // Refresh orders after execution
+            if (response.data && response.data.new_balance !== undefined) {
+                const newBalance = response.data.new_balance;
+                const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                userData.balance_usd = newBalance;
+                localStorage.setItem('user', JSON.stringify(userData));
+                window.dispatchEvent(new CustomEvent('balanceUpdated', { detail: { newBalance } }));
+            }
         } catch (error) {
             alert('Failed to execute order.');
             console.error('Failed to execute order:', error);
@@ -60,12 +67,13 @@ const Orders = () => {
                     placeholder="Filter by Crypto ID (e.g., bitcoin)"
                     value={filters.crypto_id}
                     onChange={handleFilterChange}
+                    className="auth-form-input"
                 />
-                <select name="sort_by" value={filters.sort_by} onChange={handleFilterChange}>
+                <select name="sort_by" value={filters.sort_by} onChange={handleFilterChange} className="auth-form-input">
                     <option value="timestamp">Date</option>
                     <option value="price">Price</option>
                 </select>
-                <select name="order" value={filters.order} onChange={handleFilterChange}>
+                <select name="order" value={filters.order} onChange={handleFilterChange} className="auth-form-input">
                     <option value="desc">Descending</option>
                     <option value="asc">Ascending</option>
                 </select>

@@ -19,6 +19,17 @@ function App() {
       setIsAuthenticated(true);
       setUser(JSON.parse(userData));
     }
+
+    const handleBalanceUpdate = (event) => {
+      const { newBalance } = event.detail;
+      setUser(prevUser => ({ ...prevUser, balance_usd: newBalance }));
+    };
+
+    window.addEventListener('balanceUpdated', handleBalanceUpdate);
+
+    return () => {
+      window.removeEventListener('balanceUpdated', handleBalanceUpdate);
+    };
   }, []);
 
   const handleLogin = (token, userData) => {
@@ -27,8 +38,6 @@ function App() {
     localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthenticated(true);
     setUser(userData);
-    // Force re-render
-    window.location.reload();
   };
 
   const handleLogout = () => {

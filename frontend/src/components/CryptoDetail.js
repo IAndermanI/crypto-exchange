@@ -6,7 +6,8 @@ function CryptoDetail() {
   const { id } = useParams(); // Получаем id из URL
   const navigate = useNavigate();
   const [crypto, setCrypto] = useState(null);
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(''); // Для быстрой покупки/продажи
+  const [orderAmount, setOrderAmount] = useState(''); // Для формы ордера
   const [transactionType, setTransactionType] = useState('buy');
   const [orderPrice, setOrderPrice] = useState('');
   const [message, setMessage] = useState('');
@@ -178,8 +179,8 @@ function CryptoDetail() {
         <input
           type="number"
           placeholder={`Количество ${crypto.symbol}`}
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          value={orderAmount}
+          onChange={(e) => setOrderAmount(e.target.value)}
           step="any"
           min="0"
         />
@@ -191,7 +192,7 @@ function CryptoDetail() {
           step="any"
           min="0"
         />
-        <button className="transaction-button" onClick={handleCreateOrder} disabled={!amount || !orderPrice || amount <= 0 || orderPrice <= 0}>
+        <button className="transaction-button" onClick={handleCreateOrder} disabled={!orderAmount || !orderPrice || orderAmount <= 0 || orderPrice <= 0}>
           Выставить ордер
         </button>
       </div>
@@ -209,12 +210,12 @@ function CryptoDetail() {
     try {
       await createOrder({
         crypto_id: crypto.id,
-        quantity: parseFloat(amount),
+        quantity: parseFloat(orderAmount),
         price: parseFloat(orderPrice),
         order_type: 'sell'
       });
       setMessage('Ордер успешно выставлен!');
-      setAmount('');
+      setOrderAmount('');
       setOrderPrice('');
       navigate('/orders');
     } catch (err) {

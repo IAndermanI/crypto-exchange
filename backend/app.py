@@ -430,9 +430,13 @@ def create_order():
     current_user_id = get_jwt_identity()
 
     crypto_id = data.get('crypto_id')
-    quantity = data.get('quantity')
-    price = data.get('price')
     order_type = data.get('order_type')
+
+    try:
+        quantity = float(data.get('quantity'))
+        price = float(data.get('price'))
+    except (ValueError, TypeError):
+        return jsonify({'message': 'Invalid number format for quantity or price'}), 400
 
     if not all([crypto_id, quantity, price, order_type]):
         return jsonify({'message': 'Missing required fields'}), 400
@@ -462,7 +466,90 @@ def create_order():
     db.session.add(new_order)
     db.session.commit()
 
-    return jsonify({'message': 'Order created successfully'}), 201
+    return jsonify(new_order.to_dict()), 201
+
+@app.route('/api/orders/<int:order_id>/execute', methods=['POST'])
+@jwt_required()
+def execute_order_route(order_id):
+    buyer_id = get_jwt_identity()
+    order = Order.query.get(order_id)
+
+    if not order or not order.is_active:
+        return jsonify({'message': 'Order not found or already executed'}), 404
+
+    if order.order_type != 'sell':
+        return jsonify({'message': 'This order is not a sell order'}), 400
+
+    seller_id = order.user_id
+    if str(seller_id) == str(buyer_id):
+        return jsonify({'message': 'You cannot buy your own order'}), 400
+
+    buyer = User.query.get(buyer_id)
+    seller = User.query.get(seller_id)
+    crypto = Cryptocurrency.query.get(order.crypto_id)
+
+    if not buyer or not seller or not crypto:
+        return jsonify({'message': 'Internal error: user or crypto not found'}), 500
+
+    total_cost = order.quantity * order.price
+    commission = total_cost * COMMISSION_RATE
+
+    # --- Логика покупателя ---
+    if buyer.balance_usd < total_cost:
+        return jsonify({'message': 'Insufficient USD balance to execute this order'}), 400
+
+    buyer.balance_usd -= total_cost
+
+    buyer_holding = Holdings.query.filter_by(user_id=buyer_id, crypto_id=crypto.id).first()
+    if not buyer_holding:
+        buyer_holding = Holdings(user_id=buyer_id, crypto_id=crypto.id, amount=0)
+        db.session.add(buyer_holding)
+    buyer_holding.amount += order.quantity
+
+    # --- Логика продавца ---
+    seller_holding = Holdings.query.filter_by(user_id=seller_id, crypto_id=crypto.id).first()
+    # Эта проверка должна была быть при создании ордера, но проверим еще раз
+    if not seller_holding or seller_holding.amount < order.quantity:
+        order.is_active = False # Деактивируем некорректный ордер
+        db.session.commit()
+        return jsonify({'message': 'Seller has insufficient funds. The order has been cancelled.'}), 400
+
+    seller.balance_usd += (total_cost - commission)
+    seller_holding.amount -= order.quantity
+    if seller_holding.amount == 0:
+        db.session.delete(seller_holding)
+
+    # Помечаем ордер как исполненный
+    order.is_active = False
+
+    # --- Создаем транзакции для истории ---
+    # Для покупателя (рыночная покупка по цене ордера)
+    buy_transaction = Transaction(
+        user_id=buyer_id,
+        crypto_id=crypto.id,
+        transaction_type='buy',
+        amount=order.quantity,
+        price_at_transaction=order.price,
+        fee=0, # Покупатель не платит комиссию сверх цены
+        total_cost=total_cost
+    )
+    # Для продавца (исполнение лимитного ордера)
+    sell_transaction = Transaction(
+        user_id=seller_id,
+        crypto_id=crypto.id,
+        transaction_type='sell',
+        amount=order.quantity,
+        price_at_transaction=order.price,
+        fee=commission,
+        total_cost=(total_cost - commission) # Доход продавца
+    )
+    db.session.add(buy_transaction)
+    db.session.add(sell_transaction)
+
+    db.session.commit()
+
+    return jsonify({'message': 'Order executed successfully'}), 200
+
 
 if __name__ == '__main__':
     with app.app_context():

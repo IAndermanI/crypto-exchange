@@ -6,6 +6,7 @@ const Orders = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filters, setFilters] = useState({ crypto_id: '', sort_by: 'timestamp', order: 'desc' });
+    const [currentUser, setCurrentUser] = useState(null);
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -23,6 +24,8 @@ const Orders = () => {
 
     useEffect(() => {
         fetchOrders();
+        const user = JSON.parse(localStorage.getItem('user'));
+        setCurrentUser(user);
     }, [filters]);
 
     const handleFilterChange = (e) => {
@@ -48,9 +51,9 @@ const Orders = () => {
     }
 
     return (
-        <div className="orders-container">
-            <h2>Orders</h2>
-            <div className="filters">
+        <div className="table-container">
+            <h2>Public Orders</h2>
+            <div className="filters" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem' }}>
                 <input
                     type="text"
                     name="crypto_id"
@@ -67,7 +70,7 @@ const Orders = () => {
                     <option value="asc">Ascending</option>
                 </select>
             </div>
-            <table className="orders-table">
+            <table className="holdings-table">
                 <thead>
                     <tr>
                         <th>User</th>
@@ -85,14 +88,14 @@ const Orders = () => {
                         <tr key={order.id}>
                             <td>{order.user}</td>
                             <td>{order.crypto_name} ({order.crypto_symbol.toUpperCase()})</td>
-                            <td className={`order-type ${order.order_type}`}>{order.order_type}</td>
+                            <td className={`tx-type ${order.order_type}`}><span>{order.order_type}</span></td>
                             <td>{order.quantity}</td>
                             <td>${order.price.toFixed(2)}</td>
                             <td>${(order.quantity * order.price).toFixed(2)}</td>
                             <td>{new Date(order.timestamp).toLocaleString()}</td>
                             <td>
-                                {order.order_type === 'sell' && (
-                                    <button onClick={() => handleExecuteOrder(order.id)} className="btn-buy">
+                                {order.order_type === 'sell' && currentUser && order.user !== currentUser.username && (
+                                    <button onClick={() => handleExecuteOrder(order.id)} className="transaction-button" style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}>
                                         Buy
                                     </button>
                                 )}

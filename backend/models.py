@@ -104,3 +104,18 @@ class Order(db.Model):
 
     user = db.relationship('User', backref='orders')
     cryptocurrency = db.relationship('Cryptocurrency', backref='orders')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'crypto_id': self.crypto_id,
+            'quantity': self.quantity,
+            'price': self.price,
+            'order_type': self.order_type,
+            'timestamp': self.timestamp.isoformat(),
+            'is_active': self.is_active,
+            'user': self.user.username,
+            'crypto_symbol': self.cryptocurrency.symbol,
+            'crypto_name': self.cryptocurrency.name
+        }

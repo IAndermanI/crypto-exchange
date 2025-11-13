@@ -388,23 +388,7 @@ def handle_orders():
         return create_order()
     
     # Existing GET logic
-    crypto_id = request.args.get('crypto_id')
-    sort_by = request.args.get('sort_by', 'timestamp')
-    order = request.args.get('order', 'desc')
-
-    query = Order.query.filter_by(is_active=True)
-
-    if crypto_id:
-        crypto = Cryptocurrency.query.filter_by(coingecko_id=crypto_id).first()
-        if crypto:
-            query = query.filter_by(crypto_id=crypto.id)
-
-    if hasattr(Order, sort_by):
-        if order == 'asc':
-            query = query.order_by(getattr(Order, sort_by).asc())
-        else:
-            query = query.order_by(getattr(Order, sort_by).desc())
-
+    query = Order.query.filter_by(is_active=True).order_by(Order.timestamp.desc())
     orders = query.all()
     
     output = []

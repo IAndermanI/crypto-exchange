@@ -5,13 +5,12 @@ const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filters, setFilters] = useState({ crypto_id: '', sort_by: 'timestamp', order: 'desc' });
     const [currentUser, setCurrentUser] = useState(null);
 
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const data = await getOrders(filters);
+            const data = await getOrders();
             setOrders(data);
             setError(null);
         } catch (error) {
@@ -26,11 +25,7 @@ const Orders = () => {
         fetchOrders();
         const user = JSON.parse(localStorage.getItem('user'));
         setCurrentUser(user);
-    }, [filters]);
-
-    const handleFilterChange = (e) => {
-        setFilters({ ...filters, [e.target.name]: e.target.value });
-    };
+    }, []);
 
     const handleExecuteOrder = async (orderId) => {
         try {
@@ -60,25 +55,7 @@ const Orders = () => {
     return (
         <div className="table-container">
             <h2>Public Orders</h2>
-            <div className="filters" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem' }}>
-                <input
-                    type="text"
-                    name="crypto_id"
-                    placeholder="Filter by Crypto ID (e.g., bitcoin)"
-                    value={filters.crypto_id}
-                    onChange={handleFilterChange}
-                    className="auth-form-input"
-                />
-                <select name="sort_by" value={filters.sort_by} onChange={handleFilterChange} className="auth-form-input">
-                    <option value="timestamp">Date</option>
-                    <option value="price">Price</option>
-                </select>
-                <select name="order" value={filters.order} onChange={handleFilterChange} className="auth-form-input">
-                    <option value="desc">Descending</option>
-                    <option value="asc">Ascending</option>
-                </select>
-            </div>
-            <table className="holdings-table">
+            <table className="holdings-table" style={{ marginTop: '1.5rem' }}>
                 <thead>
                     <tr>
                         <th>User</th>

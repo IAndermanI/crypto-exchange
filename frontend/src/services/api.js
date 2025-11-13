@@ -50,8 +50,8 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-export const getOrders = async (filters) => {
-    const { data } = await api.get('/orders', { params: filters });
+export const getOrders = async () => {
+    const { data } = await api.get('/orders');
     return data;
 };
 

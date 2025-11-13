@@ -15,42 +15,42 @@ function Login({ onLogin }) {
     try {
       const response = await api.post('/login', { username, password });
       
-      // Сохраняем токен и данные пользователя
+      // Save token and user data
       const { access_token, user } = response.data;
       
-      // Вызываем onLogin с токеном и данными пользователя
+      // Call onLogin with token and user data
       onLogin(access_token, user);
       
-      // Переходим на dashboard
+      // Navigate to dashboard
       navigate('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.error || 'Ошибка входа');
+      setError(err.response?.data?.error || 'Login failed');
     }
   };
 
   return (
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
-        <h2>Вход</h2>
+        <h2>Login</h2>
         {error && <div className="error">{error}</div>}
         <input
           type="text"
-          placeholder="Имя пользователя"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
         <input
           type="password"
-          placeholder="Пароль"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">Войти</button>
+        <button type="submit">Login</button>
         <p>
-          Нет аккаунта? <Link to="/register">Зарегистрироваться</Link>
+          No account? <Link to="/register">Register</Link>
         </p>
       </form>
     </div>

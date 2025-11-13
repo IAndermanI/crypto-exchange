@@ -9,7 +9,7 @@ function Portfolio() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Проверяем токен перед загрузкой
+    // Check token before loading
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
@@ -25,7 +25,7 @@ function Portfolio() {
       const response = await api.get('/portfolio');
       setPortfolio(response.data);
     } catch (err) {
-      console.error('Ошибка загрузки портфеля:', err);
+      console.error('Error loading portfolio:', err);
     } finally {
       setLoading(false);
     }
@@ -36,43 +36,43 @@ function Portfolio() {
       const response = await api.get('/transactions');
       setTransactions(response.data);
     } catch (err) {
-      console.error('Ошибка загрузки транзакций:', err);
+      console.error('Error loading transactions:', err);
     }
   };
 
-  if (loading) return <div className="loading">Загрузка...</div>;
-  if (!portfolio) return <div>Ошибка загрузки портфеля</div>;
+  if (loading) return <div className="loading">Loading...</div>;
+  if (!portfolio) return <div>Error loading portfolio</div>;
 
   return (
     <div className="portfolio">
-      <h2>Мой портфель</h2>
+      <h2>My Portfolio</h2>
       
       <div className="portfolio-summary">
         <div className="summary-card">
-          <h3>Баланс USD</h3>
+          <h3>USD Balance</h3>
           <p className="amount">${portfolio.balance_usd?.toFixed(2)}</p>
         </div>
         <div className="summary-card">
-          <h3>Стоимость криптовалют</h3>
+          <h3>Cryptocurrency Value</h3>
           <p className="amount">${portfolio.portfolio_value?.toFixed(2)}</p>
         </div>
         <div className="summary-card">
-          <h3>Общая стоимость</h3>
+          <h3>Total Value</h3>
           <p className="amount total">${portfolio.total_value?.toFixed(2)}</p>
         </div>
       </div>
 
       <div className="holdings-section">
-        <h3>Мои активы</h3>
+        <h3>My Assets</h3>
         {portfolio.holdings && portfolio.holdings.length > 0 ? (
           <table className="holdings-table">
             <thead>
               <tr>
-                <th>Название</th>
-                <th>Символ</th>
-                <th>Количество</th>
-                <th>Текущая цена</th>
-                <th>Стоимость</th>
+                <th>Name</th>
+                <th>Symbol</th>
+                <th>Amount</th>
+                <th>Current Price</th>
+                <th>Value</th>
               </tr>
             </thead>
             <tbody>
@@ -92,27 +92,27 @@ function Portfolio() {
             </tbody>
           </table>
         ) : (
-          <p className="no-holdings">У вас пока нет криптовалют</p>
+          <p className="no-holdings">You don't have any cryptocurrencies yet</p>
         )}
       </div>
 
       <div className="transactions-section">
-        <h3>История транзакций</h3>
+        <h3>Transaction History</h3>
         {transactions.length > 0 ? (
           <div className="transactions-list">
             {transactions.map((tx) => (
               <div key={tx.id} className="transaction-item">
                 <div className="tx-type">
                   <span className={tx.type === 'buy' ? 'buy' : 'sell'}>
-                    {tx.type === 'buy' ? 'Покупка' : 'Продажа'}
+                    {tx.type === 'buy' ? 'Buy' : 'Sell'}
                   </span>
                   <span>{tx.crypto}</span>
                 </div>
                 <div className="tx-details">
-                  <span>Количество: {tx.amount}</span>
-                  <span>Цена: ${tx.price?.toFixed(2)}</span>
-                  <span>Комиссия: ${tx.fee?.toFixed(2)}</span>
-                  <span>Итого: ${tx.total?.toFixed(2)}</span>
+                  <span>Amount: {tx.amount}</span>
+                  <span>Price: ${tx.price?.toFixed(2)}</span>
+                  <span>Fee: ${tx.fee?.toFixed(2)}</span>
+                  <span>Total: ${tx.total?.toFixed(2)}</span>
                 </div>
                 <div className="tx-date">
                   {new Date(tx.date).toLocaleString()}
@@ -121,7 +121,7 @@ function Portfolio() {
             ))}
           </div>
         ) : (
-          <p>Нет транзакций</p>
+          <p>No transactions</p>
         )}
       </div>
     </div>

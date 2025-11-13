@@ -13,17 +13,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'super-secret-key-change-in-production')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
-# ИСПРАВЛЕННЫЙ CORS - разрешаем всё для простоты
 CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization"]}})
 
-# Ставка комиссии
-COMMISSION_RATE = 0.015  # 1.5%
+COMMISSION_RATE = 0.015
 
 jwt = JWTManager(app)
 init_db(app)
 
 
-# Регистрация
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.json
@@ -32,13 +29,13 @@ def register():
     password = data.get('password')
     
     if not username or not email or not password:
-        return jsonify({'error': 'Все поля обязательны'}), 400
+        return jsonify({'error': 'All fields are required'}), 400
     
     if User.query.filter_by(username=username).first():
-        return jsonify({'error': 'Пользователь с таким именем уже существует'}), 400
+        return jsonify({'error': 'User with this name already exists'}), 400
     
     if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email уже используется'}), 400
+        return jsonify({'error': 'Email is already in use'}), 400
     
     user = User(username=username, email=email)
     user.set_password(password)
@@ -47,12 +44,11 @@ def register():
     
     access_token = create_access_token(identity=str(user.id))
     return jsonify({
-        'message': 'Регистрация успешна',
+        'message': 'Registration successful',
         'access_token': access_token,
         'user': user.to_dict()
     }), 201
 
-# Вход
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
@@ -60,11 +56,11 @@ def login():
     password = data.get('password')
     
     if not username or not password:
-        return jsonify({'error': 'Введите логин и пароль'}), 400
+        return jsonify({'error': 'Enter username and password'}), 400
     
     user = User.query.filter_by(username=username).first()
     if not user or not user.check_password(password):
-        return jsonify({'error': 'Неверный логин или пароль'}), 401
+        return jsonify({'error': 'Invalid username or password'}), 401
     
     access_token = create_access_token(identity=str(user.id))
     return jsonify({
@@ -73,7 +69,6 @@ def login():
     }), 200
 
 
-# Прокси для CoinGecko
 @app.route('/api/gecko/markets', methods=['GET'])
 def gecko_markets_proxy():
     try:
@@ -81,7 +76,6 @@ def gecko_markets_proxy():
         response.raise_for_status()
         data = response.json()
         
-        # Кэшируем данные в БД
         for coin_data in data:
             coingecko_id = coin_data.get('id')
             symbol = coin_data.get('symbol', '').upper()
@@ -89,15 +83,12 @@ def gecko_markets_proxy():
             if not coingecko_id or not symbol:
                 continue
 
-            # Ищем монету по coingecko_id, который уникален
             crypto = Cryptocurrency.query.filter_by(coingecko_id=coingecko_id).first()
             
             if not crypto:
-                # Если монеты нет, создаем новую
                 crypto = Cryptocurrency(coingecko_id=coingecko_id, symbol=symbol)
                 db.session.add(crypto)
             
-            # Обновляем данные монеты
             crypto.symbol = symbol
             crypto.name = coin_data.get('name', '')
             crypto.current_price = coin_data.get('current_price')
@@ -110,10 +101,8 @@ def gecko_markets_proxy():
         return jsonify(data), 200
         
     except requests.exceptions.RequestException:
-        # В случае ошибки возвращаем данные из нашей БД, приводя их к формату CoinGecko
         cryptos = Cryptocurrency.query.order_by(Cryptocurrency.market_cap.desc()).all()
         
-        # Трансформируем данные в формат, который ожидает фронтенд (аналогичный CoinGecko)
         formatted_cryptos = []
         for crypto in cryptos:
             formatted_cryptos.append({
@@ -124,7 +113,7 @@ def gecko_markets_proxy():
                 'market_cap': crypto.market_cap,
                 'total_volume': crypto.volume_24h,
                 'price_change_percentage_24h': crypto.price_change_24h,
-                'market_cap_rank': None # Добавляем недостающее поле
+                'market_cap_rank': None
             })
         return jsonify(formatted_cryptos), 200
 
@@ -136,18 +125,15 @@ def gecko_coin_detail_proxy(coin_id):
         response.raise_for_status()
         data = response.json()
         
-        # Кэшируем данные
         symbol = data.get('symbol', '').upper()
         if not symbol:
-            return jsonify(data), 200 # Не кэшируем, если нет символа
+            return jsonify(data), 200
 
-        # Ищем монету по coingecko_id, который уникален
         crypto = Cryptocurrency.query.filter_by(coingecko_id=coin_id).first()
         if not crypto:
              crypto = Cryptocurrency(coingecko_id=coin_id, symbol=symbol)
              db.session.add(crypto)
 
-        # Обновляем символ на случай, если он изменился
         crypto.symbol = symbol
         crypto.name = data.get('name', '')
         if 'market_data' in data:
@@ -161,15 +147,13 @@ def gecko_coin_detail_proxy(coin_id):
         return jsonify(data), 200
         
     except requests.exceptions.RequestException:
-        # В случае ошибки возвращаем данные из нашей БД
         crypto = Cryptocurrency.query.filter_by(coingecko_id=coin_id).first()
         if crypto:
-            # Формируем ответ, похожий на ответ от CoinGecko
             return jsonify({
                 'id': crypto.coingecko_id,
                 'symbol': crypto.symbol,
                 'name': crypto.name,
-                'image': {'large': ''}, # Нет изображения в кэше
+                'image': {'large': ''},
                 'description': {'en': 'Could not load description from CoinGecko.'},
                 'market_data': {
                     'current_price': {'usd': crypto.current_price},
@@ -181,67 +165,57 @@ def gecko_coin_detail_proxy(coin_id):
         else:
             return jsonify(error="Coin not found in cache"), 404
 
-# Покупка криптовалюты
 @app.route('/api/buy', methods=['POST'])
 @jwt_required()
 def buy_crypto():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'error': 'Пользователь не найден'}), 401
+        return jsonify({'error': 'User not found'}), 401
     
     data = request.json
     coingecko_id = data.get('coingecko_id')
     amount = float(data.get('amount', 0))
     
     if amount <= 0:
-        return jsonify({'error': 'Неверное количество'}), 400
+        return jsonify({'error': 'Invalid amount'}), 400
 
-    # Получаем актуальные данные с CoinGecko
     try:
         response = requests.get(f'https://api.coingecko.com/api/v3/coins/{coingecko_id}')
         if response.status_code != 200:
-            return jsonify({'error': 'Не удалось получить данные о криптовалюте'}), 404
+            return jsonify({'error': 'Failed to get cryptocurrency data'}), 404
         coin_data = response.json()
         current_price = coin_data['market_data']['current_price']['usd']
         symbol = coin_data['symbol'].upper()
         name = coin_data['name']
     except Exception:
-        return jsonify({'error': 'Ошибка при запросе к CoinGecko'}), 500
+        return jsonify({'error': 'Error when requesting from CoinGecko'}), 500
 
-    # Находим или создаем запись в нашей БД
-    # Находим или создаем запись в нашей БД по coingecko_id
     crypto = Cryptocurrency.query.filter_by(coingecko_id=coingecko_id).first()
     if not crypto:
         crypto = Cryptocurrency(symbol=symbol, name=name, coingecko_id=coingecko_id)
         db.session.add(crypto)
     else:
-        # Обновим данные, если монета уже есть
         crypto.name = name
         crypto.symbol = symbol
     
-    # Обновляем цену в нашей БД для истории
     crypto.current_price = current_price
     
-    # Рассчитываем стоимость с комиссией
     base_cost = amount * current_price
     fee = base_cost * COMMISSION_RATE
     total_cost = base_cost + fee
     
     if user.balance_usd < total_cost:
-        return jsonify({'error': 'Недостаточно средств'}), 400
+        return jsonify({'error': 'Insufficient funds'}), 400
     
-    # Обновляем баланс пользователя
     user.balance_usd -= total_cost
     
-    # Обновляем холдинги
     holding = Holdings.query.filter_by(user_id=user_id, crypto_id=crypto.id).first()
     if not holding:
         holding = Holdings(user_id=user_id, crypto_id=crypto.id, amount=0)
         db.session.add(holding)
     holding.amount += amount
     
-    # Записываем транзакцию
     transaction = Transaction(
         user_id=user_id,
         crypto_id=crypto.id,
@@ -255,7 +229,7 @@ def buy_crypto():
     db.session.commit()
     
     return jsonify({
-        'message': 'Покупка успешна',
+        'message': 'Purchase successful',
         'transaction': {
             'amount': amount,
             'price': crypto.current_price,
@@ -265,57 +239,49 @@ def buy_crypto():
         }
     }), 200
 
-# Продажа криптовалюты
 @app.route('/api/sell', methods=['POST'])
 @jwt_required()
 def sell_crypto():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'error': 'Пользователь не найден'}), 401
+        return jsonify({'error': 'User not found'}), 401
     
     data = request.json
     coingecko_id = data.get('coingecko_id')
     amount = float(data.get('amount', 0))
 
     if amount <= 0:
-        return jsonify({'error': 'Неверное количество'}), 400
+        return jsonify({'error': 'Invalid amount'}), 400
 
-    # Получаем актуальные данные с CoinGecko
     try:
         response = requests.get(f'https://api.coingecko.com/api/v3/coins/{coingecko_id}')
         if response.status_code != 200:
-            return jsonify({'error': 'Не удалось получить данные о криптовалюте'}), 404
+            return jsonify({'error': 'Failed to get cryptocurrency data'}), 404
         coin_data = response.json()
         current_price = coin_data['market_data']['current_price']['usd']
         symbol = coin_data['symbol'].upper()
     except Exception:
-        return jsonify({'error': 'Ошибка при запросе к CoinGecko'}), 500
+        return jsonify({'error': 'Error when requesting from CoinGecko'}), 500
 
     crypto = Cryptocurrency.query.filter_by(coingecko_id=coingecko_id).first()
     if not crypto:
-        # Этого не должно произойти, если пользователь покупал через наш сервис
-        return jsonify({'error': 'Криптовалюта не найдена в вашей базе данных'}), 404
+        return jsonify({'error': 'Cryptocurrency not found in your database'}), 404
 
-    # Проверяем наличие криптовалюты
     holding = Holdings.query.filter_by(user_id=user_id, crypto_id=crypto.id).first()
     if not holding or holding.amount < amount:
-        return jsonify({'error': 'Недостаточно криптовалюты для продажи'}), 400
+        return jsonify({'error': 'Not enough cryptocurrency to sell'}), 400
 
-    # Рассчитываем выручку с комиссией
     base_revenue = amount * current_price
     fee = base_revenue * COMMISSION_RATE
     total_revenue = base_revenue - fee
     
-    # Обновляем баланс
     user.balance_usd += total_revenue
     holding.amount -= amount
     
-    # Если криптовалюты не осталось, удаляем запись
     if holding.amount == 0:
         db.session.delete(holding)
     
-    # Записываем транзакцию
     transaction = Transaction(
         user_id=user_id,
         crypto_id=crypto.id,
@@ -329,7 +295,7 @@ def sell_crypto():
     db.session.commit()
     
     return jsonify({
-        'message': 'Продажа успешна',
+        'message': 'Sale successful',
         'transaction': {
             'amount': amount,
             'price': crypto.current_price,
@@ -339,14 +305,13 @@ def sell_crypto():
         }
     }), 200
 
-# Получить портфель пользователя
 @app.route('/api/portfolio', methods=['GET'])
 @jwt_required()
 def get_portfolio():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'error': 'Пользователь не найден'}), 401
+        return jsonify({'error': 'User not found'}), 401
         
     holdings = Holdings.query.filter_by(user_id=user_id).all()
     
@@ -359,14 +324,13 @@ def get_portfolio():
         'holdings': [h.to_dict() for h in holdings]
     }), 200
 
-# Получить историю транзакций
 @app.route('/api/transactions', methods=['GET'])
 @jwt_required()
 def get_transactions():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'error': 'Пользователь не найден'}), 401
+        return jsonify({'error': 'User not found'}), 401
         
     transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.created_at.desc()).limit(50).all()
     
@@ -387,7 +351,6 @@ def handle_orders():
     if request.method == 'POST':
         return create_order()
     
-    # Existing GET logic
     query = Order.query.filter_by(is_active=True).order_by(Order.timestamp.desc())
     orders = query.all()
     
@@ -478,7 +441,6 @@ def execute_order_route(order_id):
     total_cost = order.quantity * order.price
     commission = total_cost * COMMISSION_RATE
 
-    # --- Логика покупателя ---
     if buyer.balance_usd < total_cost:
         return jsonify({'message': 'Insufficient USD balance to execute this order'}), 400
 
@@ -490,11 +452,9 @@ def execute_order_route(order_id):
         db.session.add(buyer_holding)
     buyer_holding.amount += order.quantity
 
-    # --- Логика продавца ---
     seller_holding = Holdings.query.filter_by(user_id=seller_id, crypto_id=crypto.id).first()
-    # Эта проверка должна была быть при создании ордера, но проверим еще раз
     if not seller_holding or seller_holding.amount < order.quantity:
-        order.is_active = False # Деактивируем некорректный ордер
+        order.is_active = False
         db.session.commit()
         return jsonify({'message': 'Seller has insufficient funds. The order has been cancelled.'}), 400
 
@@ -503,21 +463,17 @@ def execute_order_route(order_id):
     if seller_holding.amount == 0:
         db.session.delete(seller_holding)
 
-    # Помечаем ордер как исполненный
     order.is_active = False
 
-    # --- Создаем транзакции для истории ---
-    # Для покупателя (рыночная покупка по цене ордера)
     buy_transaction = Transaction(
         user_id=buyer_id,
         crypto_id=crypto.id,
         transaction_type='buy',
         amount=order.quantity,
         price_at_transaction=order.price,
-        fee=0, # Покупатель не платит комиссию сверх цены
+        fee=0,
         total_cost=total_cost
     )
-    # Для продавца (исполнение лимитного ордера)
     sell_transaction = Transaction(
         user_id=seller_id,
         crypto_id=crypto.id,
@@ -525,7 +481,7 @@ def execute_order_route(order_id):
         amount=order.quantity,
         price_at_transaction=order.price,
         fee=commission,
-        total_cost=(total_cost - commission) # Доход продавца
+        total_cost=(total_cost - commission)
     )
     db.session.add(buy_transaction)
     db.session.add(sell_transaction)
@@ -541,7 +497,5 @@ def execute_order_route(order_id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        # Инициализируем базу данных с начальными криптовалютами
-        # Логика инициализации цен удалена, так как она больше не нужна
     
     app.run(host='0.0.0.0', port=5000, debug=True)

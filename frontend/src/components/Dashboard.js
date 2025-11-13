@@ -9,7 +9,7 @@ function Dashboard() {
 
   useEffect(() => {
     fetchCryptocurrencies();
-    const interval = setInterval(fetchCryptocurrencies, 60000); // Обновление раз в минуту
+    const interval = setInterval(fetchCryptocurrencies, 60000); // Update every minute
     return () => clearInterval(interval);
   }, []);
 
@@ -38,7 +38,7 @@ function Dashboard() {
 
       setCryptocurrencies(formattedData);
     } catch (err) {
-      console.error('Ошибка загрузки данных с CoinGecko:', err);
+      console.error('Error loading data from CoinGecko:', err);
     } finally {
       setLoading(false);
     }
@@ -55,19 +55,19 @@ function Dashboard() {
     return `$${num.toLocaleString()}`;
   };
 
-  if (loading) return <div className="loading">Загрузка рыночных данных...</div>;
+  if (loading) return <div className="loading">Loading market data...</div>;
 
   return (
     <div className="dashboard">
-      <h2>Рынок криптовалют</h2>
+      <h2>Cryptocurrency Market</h2>
       <div className="crypto-list">
         <div className="crypto-header">
           <span className="rank">#</span>
-          <span className="name">Название</span>
-          <span className="price">Цена</span>
-          <span className="change">24ч %</span>
-          <span className="market-cap">Капитализация</span>
-          <span className="volume">Объем (24ч)</span>
+          <span className="name">Name</span>
+          <span className="price">Price</span>
+          <span className="change">24h %</span>
+          <span className="market-cap">Market Cap</span>
+          <span className="volume">Volume (24h)</span>
         </div>
         {cryptocurrencies.map((crypto) => (
           <div

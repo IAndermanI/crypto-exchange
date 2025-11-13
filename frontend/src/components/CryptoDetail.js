@@ -3,11 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api, { createOrder } from '../services/api';
 
 function CryptoDetail() {
-  const { id } = useParams(); // Получаем id из URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const [crypto, setCrypto] = useState(null);
-  const [amount, setAmount] = useState(''); // Для быстрой покупки/продажи
-  const [orderAmount, setOrderAmount] = useState(''); // Для формы ордера
+  const [amount, setAmount] = useState('');
+  const [orderAmount, setOrderAmount] = useState('');
   const [transactionType, setTransactionType] = useState('buy');
   const [orderPrice, setOrderPrice] = useState('');
   const [message, setMessage] = useState('');
@@ -18,7 +18,6 @@ function CryptoDetail() {
     try {
       setLoading(true);
 
-      // Параллельные запросы
       const [coinDetailResponse, portfolioResponse] = await Promise.all([
         api.get(`/gecko/coins/${id}`),
         api.get('/portfolio')
@@ -27,7 +26,6 @@ function CryptoDetail() {
       const coinData = coinDetailResponse.data;
       const portfolioData = portfolioResponse.data;
 
-      // Ищем актив в портфеле пользователя
       const userHolding = portfolioData.holdings.find(
         h => h.crypto.symbol.toLowerCase() === coinData.symbol.toLowerCase()
       );
@@ -51,8 +49,8 @@ function CryptoDetail() {
       setCrypto(formattedCrypto);
       setError('');
     } catch (err) {
-      console.error('Ошибка загрузки данных:', err);
-      setError('Ошибка загрузки данных криптовалюты. Попробуйте позже.');
+      console.error('Error loading data:', err);
+      setError('Error loading cryptocurrency data. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -72,50 +70,48 @@ function CryptoDetail() {
     setMessage('');
 
     if (!amount || amount <= 0) {
-      setError('Введите корректное количество');
+      setError('Please enter a valid amount');
       return;
     }
 
     try {
       const endpoint = transactionType === 'buy' ? '/buy' : '/sell';
       const response = await api.post(endpoint, {
-        coingecko_id: crypto.id, // Отправляем coingecko_id
+        coingecko_id: crypto.id,
         amount: parseFloat(amount)
       });
       
       setMessage(response.data.message);
       setAmount('');
-      await fetchData(); // Обновляем все данные
+      await fetchData();
       
-      // Обновляем баланс в localStorage
       if (response.data.transaction && response.data.transaction.new_balance !== undefined) {
         const newBalance = response.data.transaction.new_balance;
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         userData.balance_usd = newBalance;
         localStorage.setItem('user', JSON.stringify(userData));
-        // Создаем и отправляем кастомное событие
         window.dispatchEvent(new CustomEvent('balanceUpdated', { detail: { newBalance } }));
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Ошибка транзакции');
+      setError(err.response?.data?.error || 'Transaction error');
     }
   };
   
   const calculateTotal = () => {
     if (!amount || !crypto) return 0;
     const baseTotal = parseFloat(amount) * crypto.current_price;
-    const commission = baseTotal * 0.015; // 1.5% комиссия
+    const commission = baseTotal * 0.015;
     return transactionType === 'buy' ? baseTotal + commission : baseTotal - commission;
   };
 
-  if (loading) return <div className="loading">Загрузка данных...</div>;
+  if (loading) return <div className="loading">Loading data...</div>;
   if (error) return <div className="error">{error}</div>;
-  if (!crypto) return <div>Криптовалюта не найдена</div>;
+  if (!crypto) return <div>Cryptocurrency not found</div>;
 
   return (
     <div className="crypto-detail">
       <button className="back-button" onClick={() => navigate('/dashboard')}>
-        ← Назад к рынку
+        ← Back to market
       </button>
       
       <div className="crypto-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -128,38 +124,38 @@ function CryptoDetail() {
 
       <div className="crypto-stats">
         <div className="stat">
-          <span>Изменение (24ч)</span>
+          <span>Change (24h)</span>
           <span className={crypto.price_change_24h >= 0 ? 'positive' : 'negative'}>
             {crypto.price_change_24h?.toFixed(2)}%
           </span>
         </div>
         <div className="stat">
-          <span>Объем (24ч)</span>
+          <span>Volume (24h)</span>
           <span>${crypto.volume_24h?.toLocaleString()}</span>
         </div>
         <div className="stat">
-          <span>Капитализация</span>
+          <span>Market Cap</span>
           <span>${crypto.market_cap?.toLocaleString()}</span>
         </div>
       </div>
 
       {crypto.user_holdings && (
         <div className="user-holdings" style={{ background: 'var(--bg-tertiary)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
-          <h3>Ваши активы</h3>
-          <p>Количество: {crypto.user_holdings.amount} {crypto.symbol}</p>
-          <p>Стоимость: ${crypto.user_holdings.total_value?.toFixed(2)}</p>
+          <h3>Your Assets</h3>
+          <p>Amount: {crypto.user_holdings.amount} {crypto.symbol}</p>
+          <p>Value: ${crypto.user_holdings.total_value?.toFixed(2)}</p>
         </div>
       )}
 
       <div className="transaction-form">
-        <h3>Торговля</h3>
+        <h3>Trade</h3>
         <div className="transaction-type">
-          <button className={transactionType === 'buy' ? 'active' : ''} onClick={() => setTransactionType('buy')}>Купить</button>
-          <button className={transactionType === 'sell' ? 'active' : ''} onClick={() => setTransactionType('sell')}>Продать</button>
+          <button className={transactionType === 'buy' ? 'active' : ''} onClick={() => setTransactionType('buy')}>Buy</button>
+          <button className={transactionType === 'sell' ? 'active' : ''} onClick={() => setTransactionType('sell')}>Sell</button>
         </div>
         <input
           type="number"
-          placeholder={`Количество ${crypto.symbol}`}
+          placeholder={`Amount ${crypto.symbol}`}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           step="any"
@@ -167,21 +163,21 @@ function CryptoDetail() {
         />
         {amount > 0 && (
           <div className="transaction-info">
-            <p>Комиссия (1.5%): ${(parseFloat(amount) * crypto.current_price * 0.015).toFixed(2)}</p>
-            <p>Итого: ${calculateTotal().toFixed(2)}</p>
+            <p>Commission (1.5%): ${(parseFloat(amount) * crypto.current_price * 0.015).toFixed(2)}</p>
+            <p>Total: ${calculateTotal().toFixed(2)}</p>
           </div>
         )}
         <button className="transaction-button" onClick={handleTransaction}>
-          {transactionType === 'buy' ? 'Купить' : 'Продать'} {crypto.symbol}
+          {transactionType === 'buy' ? 'Buy' : 'Sell'} {crypto.symbol}
         </button>
         {message && <div className="success" style={{ marginTop: '1rem' }}>{message}</div>}
       </div>
       
       <div className="transaction-form">
-        <h3>Выставить ордер на продажу</h3>
+        <h3>Place a sell order</h3>
         <input
           type="number"
-          placeholder={`Количество ${crypto.symbol}`}
+          placeholder={`Amount ${crypto.symbol}`}
           value={orderAmount}
           onChange={(e) => setOrderAmount(e.target.value)}
           step="any"
@@ -189,19 +185,19 @@ function CryptoDetail() {
         />
         <input
           type="number"
-          placeholder="Цена за единицу (USD)"
+          placeholder="Price per unit (USD)"
           value={orderPrice}
           onChange={(e) => setOrderPrice(e.target.value)}
           step="any"
           min="0"
         />
         <button className="transaction-button" onClick={handleCreateOrder} disabled={!orderAmount || !orderPrice || orderAmount <= 0 || orderPrice <= 0}>
-          Выставить ордер
+          Place order
         </button>
       </div>
 
       <div className="crypto-description" style={{ marginTop: '2rem' }}>
-        <h3>О {crypto.name}</h3>
+        <h3>About {crypto.name}</h3>
         <p dangerouslySetInnerHTML={{ __html: crypto.description }}></p>
       </div>
     </div>
@@ -217,12 +213,12 @@ function CryptoDetail() {
         price: parseFloat(orderPrice),
         order_type: 'sell'
       });
-      setMessage('Ордер успешно выставлен!');
+      setMessage('Order placed successfully!');
       setOrderAmount('');
       setOrderPrice('');
       navigate('/orders');
     } catch (err) {
-      setError(err.response?.data?.message || 'Ошибка при создании ордера');
+      setError(err.response?.data?.message || 'Error creating order');
     }
   }
 }

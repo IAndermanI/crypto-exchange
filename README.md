@@ -1,30 +1,30 @@
-# Crypto Exchange - Песочница криптобиржи
+# Crypto Exchange - Cryptocurrency Exchange Sandbox
 
-## Описание
-Простая криптобиржа-песочница с возможностью покупки/продажи криптовалют по реальным ценам (данные из CoinGecko API).
+## Description
+A simple sandbox cryptocurrency exchange with the ability to buy/sell cryptocurrencies at real prices (data from CoinGecko API).
 
-## Функционал
-- ✅ Регистрация и авторизация пользователей
-- ✅ Просмотр актуальных цен криптовалют
-- ✅ Покупка и продажа криптовалют с комиссией 1.5%
-- ✅ Портфель с отображением активов
-- ✅ История транзакций
-- ✅ Начальный баланс $10,000 для каждого пользователя
+## Features
+- ✅ User registration and authorization
+- ✅ View current cryptocurrency prices
+- ✅ Buy and sell cryptocurrencies with a 1.5% commission
+- ✅ Portfolio with asset display
+- ✅ Transaction history
+- ✅ Initial balance of $10,000 for each user
 
-## Технологический стек
+## Technology Stack
 - **Backend**: Python, Flask, SQLAlchemy, PostgreSQL
 - **Frontend**: React, React Router, Axios
-- **База данных**: PostgreSQL
-- **Контейнеризация**: Docker, Docker Compose
+- **Database**: PostgreSQL
+- **Containerization**: Docker, Docker Compose
 
-## Установка и запуск
+## Installation and Launch
 
-### Предварительные требования
-- Docker и Docker Compose установлены на вашей системе
+### Prerequisites
+- Docker and Docker Compose installed on your system
 
-### Шаги для запуска
+### Steps to launch
 
-1. Клонируйте репозиторий:
+1. Clone the repository:
 ```bash
 git clone <your-repo-url>
 cd crypto-exchange

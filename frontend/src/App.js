@@ -33,7 +33,7 @@ function App() {
   }, []);
 
   const handleLogin = (token, userData) => {
-    // ВАЖНО: сохраняем токен и данные пользователя
+    // IMPORTANT: save token and user data
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthenticated(true);
@@ -54,11 +54,11 @@ function App() {
           <h1>Crypto Exchange</h1>
           {isAuthenticated && (
             <div className="nav-links">
-              <NavLink to="/dashboard">Рынок</NavLink>
-              <NavLink to="/portfolio">Портфель</NavLink>
-              <NavLink to="/orders">Ордера</NavLink>
-              <button onClick={handleLogout}>Выйти</button>
-              {user && <span className="user-info">Баланс: ${user.balance_usd?.toFixed(2)}</span>}
+              <NavLink to="/dashboard">Market</NavLink>
+              <NavLink to="/portfolio">Portfolio</NavLink>
+              <NavLink to="/orders">Orders</NavLink>
+              <button onClick={handleLogout}>Logout</button>
+              {user && <span className="user-info">Balance: ${user.balance_usd?.toFixed(2)}</span>}
             </div>
           )}
         </nav>

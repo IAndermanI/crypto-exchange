@@ -16,28 +16,28 @@ function Register({ onLogin }) {
     try {
       const response = await api.post('/register', { username, email, password });
       
-      // Сохраняем токен и данные пользователя
+      // Save token and user data
       const { access_token, user } = response.data;
       
-      // Вызываем onLogin с токеном и данными пользователя
+      // Call onLogin with token and user data
       onLogin(access_token, user);
       
-      // Переходим на dashboard
+      // Navigate to dashboard
       navigate('/dashboard');
     } catch (err) {
       console.error('Register error:', err);
-      setError(err.response?.data?.error || 'Ошибка регистрации');
+      setError(err.response?.data?.error || 'Registration failed');
     }
   };
 
   return (
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
-        <h2>Регистрация</h2>
+        <h2>Register</h2>
         {error && <div className="error">{error}</div>}
         <input
           type="text"
-          placeholder="Имя пользователя"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
@@ -51,14 +51,14 @@ function Register({ onLogin }) {
         />
         <input
           type="password"
-          placeholder="Пароль"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">Зарегистрироваться</button>
+        <button type="submit">Register</button>
         <p>
-          Уже есть аккаунт? <Link to="/login">Войти</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </form>
     </div>

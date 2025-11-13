@@ -28,3 +28,8 @@ A simple sandbox cryptocurrency exchange with the ability to buy/sell cryptocurr
 ```bash
 git clone <your-repo-url>
 cd crypto-exchange
+```
+2. Start docker-compose
+```bash
+sudo docker-compose up --build
+```
